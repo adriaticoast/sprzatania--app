@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Moje Sprzątania</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sprzątania">
+  <meta name="theme-color" content="#2980B9">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      background: #2980B9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #splash {
+      position: fixed; inset: 0;
+      background: #2980B9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo { font-size: 64px; margin-bottom: 16px; }
+    h1 { font-size: 22px; font-weight: 600; color: #fff; }
+    p  { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 6px; }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-top: 32px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="splash">
+    <div class="logo">🧹</div>
+    <h1>Moje Sprzątania</h1>
+    <p>Ładowanie zadań...</p>
+    <div class="spinner"></div>
+  </div>
+
+  <script>
+    var APPS_URL = 'https://script.google.com/macros/s/AKfycbwFOSO8N-gINgkNh56K_5nfJNlEJXik_z5N5bXRvVKA2XPfg1qUrPR34cM83jW7D2Rq/exec';
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(function(){});
+    }
+
+    // Przekieruj po 800ms (żeby splash zdążył się pokazać)
+    setTimeout(function() {
+      window.location.href = APPS_URL;
+    }, 800);
+  </script>
+</body>
+</html>
