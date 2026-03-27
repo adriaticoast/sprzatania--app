@@ -13,7 +13,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#F0F3F7;color:#1a1a1a;}
-.screen{display:none;}
+.screen{display:none;} .screen.active{display:block;}
 .screen.active{display:block;}
 .w{max-width:500px;margin:0 auto;padding:16px 14px 80px;}
 
@@ -140,16 +140,13 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 </head>
 <body>
 
-<!-- Splash -->
-<div id="s-splash" class="screen active" style="height:100vh;display:flex;">
-  <div class="splash-logo">🧹</div>
   <div class="splash-title">Moje Sprzątania</div>
   <div class="splash-sub">Ładowanie...</div>
   <div class="spinner"></div>
 </div>
 
 <!-- Login -->
-<div id="s-login" class="screen">
+<div id="s-login" class="screen active">
   <div class="w">
     <div class="login-hero">
       <div class="login-icon">🧹</div>
@@ -691,17 +688,10 @@ function saveNW(row, cardId){
 
 // ── Init ──────────────────────────────────────────────────────
 function init(){
-  show('s-splash');
+  document.getElementById('worker-list').innerHTML = '<div style="text-align:center;padding:30px;color:#888;"><div class="spinner" style="border-color:rgba(41,128,185,0.2);border-top-color:#2980B9;margin:0 auto 12px;"></div>Ładowanie pracowników...</div>';
   loadData(function(){
-    show('s-login');
     renderLogin();
   });
-  setTimeout(function(){
-    if(document.getElementById('s-splash').classList.contains('active')){
-      show('s-login');
-      renderLogin();
-    }
-  }, 3000);
 }
 
 if ('serviceWorker' in navigator) {
