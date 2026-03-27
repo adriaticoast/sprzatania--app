@@ -13,12 +13,12 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#F0F3F7;color:#1a1a1a;}
-.screen{display:none;min-height:100vh;}
+.screen{display:none;}
 .screen.active{display:block;}
 .w{max-width:500px;margin:0 auto;padding:16px 14px 80px;}
 
 /* Splash */
-#s-splash{background:#2980B9;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#s-splash{background:#2980B9;display:flex;flex-direction:column;align-items:center;justify-content:center;position:fixed;inset:0;z-index:999;}
 .splash-logo{font-size:64px;margin-bottom:16px;}
 .splash-title{font-size:22px;font-weight:600;color:#fff;}
 .splash-sub{font-size:13px;color:rgba(255,255,255,0.7);margin-top:6px;}
@@ -696,12 +696,12 @@ function init(){
     show('s-login');
     renderLogin();
   });
-  // Hide splash after max 1.5s even if still loading
   setTimeout(function(){
     if(document.getElementById('s-splash').classList.contains('active')){
       show('s-login');
+      renderLogin();
     }
-  }, 1500);
+  }, 3000);
 }
 
 if ('serviceWorker' in navigator) {
