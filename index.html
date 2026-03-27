@@ -220,6 +220,7 @@ function renderLogin(){
 
 function showJobs(w){
   state.currentWorker=w;
+  if(!state.loaded){ loadData(function(){ showJobs(w); }); return; }
   var today=new Date();today.setHours(0,0,0,0);
   var jobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return j.cleaner===w&&jd>=today;});
   document.getElementById('jobs-title').textContent=w;
@@ -238,6 +239,7 @@ function showJobs(w){
 
 function showCalendar(){
   state.prevScreen=state.currentWorker?'jobs':'login';
+  if(!state.loaded){ loadData(function(){ showCalendar(); }); return; }
   var today=new Date();today.setHours(0,0,0,0);
   var jobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return jd>=today;});
   var months={};
