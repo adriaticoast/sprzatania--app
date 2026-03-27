@@ -353,9 +353,7 @@ function apiAction(params, cb){
 
 // ── Data loading ──────────────────────────────────────────────
 function loadData(cb){
-  loading(true);
   apiGet('action=spa_data', function(err, data){
-    loading(false);
     if(err){ showError('Nie udało się załadować danych. Sprawdź połączenie.'); return; }
     try{
       // JSONP — data is parsed object
@@ -693,10 +691,17 @@ function saveNW(row, cardId){
 
 // ── Init ──────────────────────────────────────────────────────
 function init(){
+  show('s-splash');
   loadData(function(){
     show('s-login');
     renderLogin();
   });
+  // Hide splash after max 1.5s even if still loading
+  setTimeout(function(){
+    if(document.getElementById('s-splash').classList.contains('active')){
+      show('s-login');
+    }
+  }, 1500);
 }
 
 if ('serviceWorker' in navigator) {
