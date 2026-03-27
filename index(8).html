@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Moje Sprzątania</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sprzątania">
+<meta name="theme-color" content="#2980B9">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#F0F3F7;color:#1a1a1a;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+.w{max-width:500px;margin:0 auto;padding:16px 14px 80px;}
+
+/* Splash */
+#s-splash{background:#2980B9;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.splash-logo{font-size:64px;margin-bottom:16px;}
+.splash-title{font-size:22px;font-weight:600;color:#fff;}
+.splash-sub{font-size:13px;color:rgba(255,255,255,0.7);margin-top:6px;}
+.spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;margin-top:32px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Header */
+.header{background:#2980B9;padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50;}
+.header-back{background:rgba(255,255,255,0.2);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.header-title{font-size:17px;font-weight:500;color:#fff;flex:1;}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.7);}
+
+/* Login */
+.login-hero{text-align:center;padding:32px 0 24px;}
+.login-icon{font-size:48px;margin-bottom:12px;}
+.login-title{font-size:22px;font-weight:500;color:#1a1a1a;}
+.login-sub{font-size:13px;color:#888;margin-top:4px;}
+.worker-list{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.worker-btn{background:#fff;border:0.5px solid #ddd;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:500;color:#1a1a1a;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;transition:background 0.15s;}
+.worker-btn:active{background:#EBF5FB;transform:scale(0.98);}
+.worker-avatar{width:38px;height:38px;border-radius:50%;background:#2980B9;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;}
+
+/* Calendar btn */
+.cal-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#fff;border:0.5px solid #ddd;border-radius:10px;font-size:14px;font-weight:500;color:#2471A3;cursor:pointer;margin-bottom:16px;width:100%;}
+.cal-btn:active{background:#EBF5FB;}
+
+/* Section headers */
+.sec-today{font-size:14px;font-weight:500;color:#C0392B;margin:0 0 12px 0;padding-bottom:8px;border-bottom:2px solid #E74C3C;}
+.sec-upcoming{font-size:13px;font-weight:500;color:#888;margin:18px 0 12px 0;padding-bottom:6px;border-bottom:0.5px solid #eee;}
+.no-jobs{background:#EBF5FB;border-radius:10px;padding:20px;text-align:center;color:#666;margin-bottom:16px;font-size:14px;}
+
+/* Job card */
+.card{background:#fff;border:0.5px solid #ddd;border-radius:14px;padding:16px;margin-bottom:14px;}
+.card.done{opacity:0.55;}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.card-prop{font-size:17px;font-weight:500;color:#1a1a1a;}
+.badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap;margin-left:8px;flex-shrink:0;}
+.badge-CRITICAL{background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595;}
+.badge-URGENT{background:#FAEEDA;color:#854F0B;border:0.5px solid #EF9F27;}
+.badge-FLEXIBLE{background:#EAF3DE;color:#3B6D11;border:0.5px solid #97C459;}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.card-cell{background:#F4F6F8;border-radius:8px;padding:9px 11px;}
+.card-cell-label{font-size:10px;font-weight:500;color:#888;letter-spacing:0.3px;margin-bottom:3px;}
+.card-cell-val{font-size:12px;color:#333;line-height:1.4;}
+.card-cell-time{font-size:16px;font-weight:500;color:#2471A3;margin-top:3px;}
+.card-guests{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.card-guests-label{font-size:12px;color:#888;}
+.card-guests-val{font-size:14px;font-weight:500;}
+
+/* Extras */
+.extras-label{font-size:10px;font-weight:500;color:#7D4900;letter-spacing:0.4px;margin:10px 0 6px 0;}
+.extras-list{display:flex;flex-direction:column;gap:5px;margin-bottom:6px;}
+.extra-item{padding:7px 12px;border-radius:8px;font-size:13px;font-weight:500;}
+.extra-std{background:#FAEEDA;color:#7D4900;border:0.5px solid #EF9F27;}
+.extra-custom{background:#F4ECF7;color:#6C3483;border:0.5px solid #C39BD3;}
+.no-extras{margin:10px 0;background:#F4F6F8;border-radius:6px;padding:7px 10px;font-size:12px;color:#888;}
+.notes-box{margin-top:8px;padding:8px 10px;background:#EBF5FB;border-left:3px solid #3498DB;border-radius:0 6px 6px 0;font-size:12px;color:#444;}
+
+/* Checklist toggle */
+.cl-toggle{width:100%;padding:10px 14px;background:#F4F6F8;border:0.5px solid #ddd;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;color:#222;margin-top:14px;}
+.cl-toggle:active{background:#e8eaed;}
+.cl-body{display:none;margin-top:8px;}
+.cl-body.open{display:block;}
+.cl-section-title{font-size:13px;font-weight:500;color:#333;padding:8px 0 5px 0;border-top:0.5px solid #eee;}
+.cl-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:0.5px solid #eee;cursor:pointer;}
+.cl-item input{width:17px;height:17px;margin-top:2px;flex-shrink:0;accent-color:#27AE60;}
+.cl-item span{font-size:13px;line-height:1.5;}
+.cl-item.checked span{text-decoration:line-through;opacity:0.4;}
+.cl-warn{color:#7D4900;font-weight:500;}
+
+/* Usterki */
+.usterki-section{margin-top:14px;border-top:0.5px solid #eee;padding-top:12px;}
+.usterki-title{font-size:12px;font-weight:500;color:#555;margin-bottom:8px;}
+.usterka-item{display:flex;align-items:flex-start;gap:6px;padding:7px 9px;background:#FEF9E7;border:0.5px solid #F9E79F;border-radius:8px;margin-bottom:5px;}
+.usterka-ts{font-size:11px;color:#888;margin-bottom:2px;}
+.usterka-text{font-size:13px;color:#444;}
+.usterka-btns{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.usterka-edit{font-size:11px;padding:3px 8px;background:#EBF5FB;color:#1A5276;border:0.5px solid #AED6F1;border-radius:6px;cursor:pointer;}
+.usterka-del{font-size:11px;padding:3px 8px;background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595;border-radius:6px;cursor:pointer;}
+.usterki-textarea{width:100%;margin-top:6px;padding:9px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;color:#222;background:#FAFAFA;resize:vertical;font-family:inherit;}
+.usterki-save-btn{width:100%;margin-top:6px;padding:10px;background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;}
+
+/* Done buttons */
+.done-row{margin-top:12px;display:flex;gap:8px;}
+.done-badge{flex:1;text-align:center;background:#EAF3DE;color:#1E8449;border:0.5px solid #82E0AA;padding:11px;border-radius:10px;font-size:14px;font-weight:500;}
+.undone-btn{padding:11px 14px;background:#FEF9E7;color:#7D6608;border:0.5px solid #F9E79F;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.done-btn{display:block;width:100%;margin-top:14px;padding:14px;background:#EAF3DE;color:#1E8449;border:0.5px solid #82E0AA;border-radius:10px;font-size:15px;font-weight:500;text-align:center;cursor:pointer;border:0.5px solid #82E0AA;}
+.done-btn:active{transform:scale(0.98);}
+.nw-toggle{width:100%;margin-top:8px;padding:11px;background:#fff;color:#888;border:0.5px solid #ddd;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;}
+.nw-body{display:none;margin-top:8px;}
+.nw-body.open{display:block;}
+.nw-textarea{width:100%;padding:9px;border:0.5px solid #F09595;border-radius:8px;font-size:13px;color:#222;background:#FFF5F5;resize:vertical;font-family:inherit;}
+.nw-save{width:100%;margin-top:6px;padding:10px;background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;}
+
+/* Calendar */
+.cal-month-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #2980B9;}
+.cal-month-name{font-size:18px;font-weight:500;}
+.cal-month-count{background:#2980B9;color:#fff;font-size:12px;font-weight:500;padding:2px 10px;border-radius:20px;}
+.cal-item{display:flex;align-items:stretch;gap:10px;margin-bottom:8px;background:#fff;border:0.5px solid #ddd;border-radius:10px;padding:10px 12px;}
+.cal-item.done{opacity:0.5;}
+.cal-date{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:44px;background:#F4F6F8;border-radius:8px;padding:6px 8px;text-align:center;}
+.cal-day-name{font-size:10px;color:#888;font-weight:500;}
+.cal-day-num{font-size:22px;font-weight:700;line-height:1.1;}
+.cal-info{flex:1;min-width:0;}
+.cal-prop{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;}
+.cal-cleaner{font-size:12px;color:#555;margin-bottom:4px;}
+.cal-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.cal-done-badge{background:#EAF3DE;color:#1E8449;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;}
+
+/* Loading overlay */
+.loading{display:none;position:fixed;inset:0;background:rgba(240,243,247,0.85);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+.loading.show{display:flex;}
+.loading-text{font-size:14px;color:#555;}
+
+/* Error */
+.error-box{background:#FCEBEB;border:0.5px solid #F09595;border-radius:10px;padding:16px;text-align:center;color:#A32D2D;font-size:14px;margin:16px 0;}
+.retry-btn{margin-top:10px;padding:8px 20px;background:#A32D2D;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- Splash -->
+<div id="s-splash" class="screen active" style="height:100vh;display:flex;">
+  <div class="splash-logo">🧹</div>
+  <div class="splash-title">Moje Sprzątania</div>
+  <div class="splash-sub">Ładowanie...</div>
+  <div class="spinner"></div>
+</div>
+
+<!-- Login -->
+<div id="s-login" class="screen">
+  <div class="w">
+    <div class="login-hero">
+      <div class="login-icon">🧹</div>
+      <div class="login-title">Moje Sprzątania</div>
+      <div class="login-sub">Wybierz swoje imię</div>
+    </div>
+    <button class="cal-btn" onclick="showCalendar()">📅 Zobacz wszystkie sprzątania</button>
+    <div id="worker-list" class="worker-list"></div>
+  </div>
+</div>
+
+<!-- Jobs -->
+<div id="s-jobs" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="showLogin()">←</button>
+    <div>
+      <div class="header-title" id="jobs-title">Moje sprzątania</div>
+      <div class="header-sub" id="jobs-sub"></div>
+    </div>
+  </div>
+  <div class="w">
+    <button class="cal-btn" onclick="showCalendar()">📅 Zobacz wszystkie sprzątania</button>
+    <div id="jobs-content"></div>
+  </div>
+</div>
+
+<!-- Calendar -->
+<div id="s-calendar" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="goBackFromCalendar()">←</button>
+    <div>
+      <div class="header-title">Kalendarz sprzątań</div>
+      <div class="header-sub">Wszystkie zaplanowane</div>
+    </div>
+  </div>
+  <div class="w">
+    <div id="cal-content"></div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div id="loading" class="loading">
+  <div class="spinner" style="border-color:rgba(41,128,185,0.3);border-top-color:#2980B9;"></div>
+  <div class="loading-text">Ładowanie...</div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────
+var API = 'https://script.google.com/macros/s/AKfycbyPINiRgimt8288_GM2zGVWvoqy4MdE-4XMGhlVK1h5_eK7keZ2KvhJmSfRMNuHnVYm/exec';
+
+// ── State ─────────────────────────────────────────────────────
+var state = {
+  workers: [],
+  jobs: [],
+  allJobs: [],
+  currentWorker: null,
+  prevScreen: 'login',
+  loaded: false,
+  checklist: {}  // cardId -> { sIdx_iIdx: true/false }
+};
+
+var CHECKLIST = [
+  { s:'Sypialnia i salon', items:[
+    'Pościel zdjąć i wymienić na świeżą (GUESTS gości)',
+    'Dać komplet nowych ręczników (GUESTS gości)',
+    'Sprawdzić materace (plamy, uszkodzenia)',
+    'Wyczyścić lustra',
+    'Sprawdzić szafki i pod łóżkami (czy nic nie zostało)',
+    'Ułożyć poduszki i koce'
+  ]},
+  { s:'Kuchnia', items:[
+    'UWAGA: Odkamienić baterie!',
+    'Wyciągnąć naczynia ze zmywarki',
+    'Wyczyścić sitka w zmywarce',
+    'Sprawdzić czystość schowanych naczyń i sztućców, umyć w razie potrzeby',
+    'Wyczyścić blat kuchenny',
+    'Wyczyścić zlew',
+    'Dać nową gąbeczkę/ściereczkę',
+    'Uzupełnić dozowniki z mydłem/płynem do naczyń',
+    'Wyczyścić ekspres do kawy - wyciągnąć zużyte kapsułki',
+    'Umyć lodówkę',
+    'Wyczyścić kuchenkę i płytę grzewczą',
+    'Sprawdzić czajnik',
+    'Sprawdzić czystość airfryera i umyć w razie potrzeby',
+    'Wyrzucić śmieci z kosza',
+    'Uzupełnić podstawowe rzeczy (papier, worki)',
+    'Przeliczyć sztućce, talerze, szklanki i kubki - zapisać braki i uzupełnić'
+  ]},
+  { s:'Łazienka', items:[
+    'UWAGA: Odkamienić baterie!',
+    'Wyczyścić odpływ pod prysznicem',
+    'Wyczyścić toaletę',
+    'Wymienić wodę w szczotce do toalety',
+    'Wyczyścić prysznic (smugi na kabinie!)/wannę',
+    'Umyć umywalkę',
+    'Uzupełnić dozowniki z mydłem',
+    'Wyczyścić lustra',
+    'Uzupełnić papier toaletowy',
+    'Opróżnić kosz na śmieci',
+    'Sprawdzić wnętrze pralki'
+  ]},
+  { s:'Podłogi i ogólne', items:[
+    'Odkurzyć wszystkie podłogi (pod łóżkami + odsunąć kanapy!)',
+    'Umyć podłogi na mokro (pod łóżkami + odsunąć kanapy!)',
+    'Sprawdzić kąty i trudno dostępne miejsca',
+    'Wywietrzyć pomieszczenia',
+    'Przetrzeć kurz (szafki, półki, lampki, TV)',
+    '*W razie potrzeby umyć okna'
+  ]},
+  { s:'Balkon / taras', items:[
+    'Pozamiatać podłogę',
+    'Wytrzeć stół i krzesła',
+    'Sprawdzić popielniczki',
+    'Usunąć śmieci',
+    'Sprawdzić czystość grilla i wyczyścić w razie potrzeby',
+    'Sprawdzić ogólny porządek'
+  ]},
+  { s:'Na koniec', items:[
+    'Sprawdzić czy wszystko działa (światło, sprzęty)',
+    'Zamknąć okna i drzwi',
+    'Ostatnia kontrola wizualna'
+  ]}
+];
+
+var DAY_NAMES   = ['Nd','Pn','Wt','Śr','Cz','Pt','So'];
+var DAY_NAMES_LONG = ['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
+var MONTH_NAMES = ['Stycznia','Lutego','Marca','Kwietnia','Maja','Czerwca','Lipca','Sierpnia','Września','Października','Listopada','Grudnia'];
+var MONTH_NAMES_FULL = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+
+// ── Helpers ───────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function show(id){ document.querySelectorAll('.screen').forEach(function(el){el.classList.remove('active');}); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+function loading(on){ document.getElementById('loading').classList[on?'add':'remove']('show'); }
+
+function initials(name){
+  var parts = String(name).trim().split(' ');
+  if(parts.length>=2) return (parts[0][0]+parts[1][0]).toUpperCase();
+  return String(name).substring(0,2).toUpperCase();
+}
+
+function fmtDateLong(d){
+  return DAY_NAMES_LONG[d.getDay()]+', '+d.getDate()+' '+MONTH_NAMES[d.getMonth()];
+}
+
+function fmtTime(val){
+  if(!val||val==='') return '';
+  if(val instanceof Date){ var h=val.getHours(),m=val.getMinutes(); return (h<10?'0':'')+h+':'+(m<10?'0':'')+m; }
+  var s=String(val).trim();
+  var match=s.match(/^(\d{1,2}):(\d{2})/);
+  if(match) return (match[1].length<2?'0':'')+match[1]+':'+match[2];
+  var n=Number(s);
+  if(!isNaN(n)){
+    if(n>=1) n=n-Math.floor(n);
+    var tot=Math.round(n*24*60);
+    var hh=Math.floor(tot/60)%24,mm=tot%60;
+    return (hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;
+  }
+  return s;
+}
+
+function isToday(d){
+  var t=new Date(); t.setHours(0,0,0,0);
+  var dd=new Date(d); dd.setHours(0,0,0,0);
+  return dd.getTime()===t.getTime();
+}
+
+function isPast(d){
+  var t=new Date(); t.setHours(0,0,0,0);
+  var dd=new Date(d); dd.setHours(0,0,0,0);
+  return dd.getTime()<t.getTime();
+}
+
+// ── API calls ─────────────────────────────────────────────────
+function apiGet(params, cb){
+  var cbName = 'cb_'+Date.now();
+  var script = document.createElement('script');
+  var done = false;
+  window[cbName] = function(data){
+    done = true;
+    delete window[cbName];
+    document.body.removeChild(script);
+    cb(null, data);
+  };
+  script.onerror = function(){
+    if(done) return;
+    done = true;
+    delete window[cbName];
+    cb(new Error('Błąd sieci'), null);
+  };
+  script.src = API+'?'+params+'&callback='+cbName+'&_='+Date.now();
+  document.body.appendChild(script);
+}
+
+function apiAction(params, cb){
+  // Fire and forget via image trick (faster, no CORS issues)
+  var url = API+'?'+params+'&_='+Date.now();
+  var img = new Image();
+  img.onload = img.onerror = function(){ if(cb) cb(); };
+  img.src = url;
+}
+
+// ── Data loading ──────────────────────────────────────────────
+function loadData(cb){
+  loading(true);
+  apiGet('action=spa_data', function(err, data){
+    loading(false);
+    if(err){ showError('Nie udało się załadować danych. Sprawdź połączenie.'); return; }
+    try{
+      // JSONP — data is parsed object
+      state.workers = data.workers || [];
+      state.allJobs = (data.jobs || []).map(function(j){
+        j.date = new Date(j.dateTs);
+        return j;
+      });
+      state.loaded = true;
+      if(cb) cb();
+    } catch(e){
+      showError('Błąd parsowania: '+e);
+    }
+  });
+}
+
+function showError(msg){
+  show('s-login');
+  var el = document.getElementById('worker-list');
+  el.innerHTML = '<div class="error-box">'+esc(msg)+'<br><button class="retry-btn" onclick="init()">Spróbuj ponownie</button></div>';
+}
+
+// ── Screens ───────────────────────────────────────────────────
+function showLogin(){
+  state.currentWorker = null;
+  show('s-login');
+  if(!state.loaded){ loadData(renderLogin); return; }
+  renderLogin();
+}
+
+function renderLogin(){
+  var el = document.getElementById('worker-list');
+  if(!state.workers.length){ el.innerHTML='<div class="error-box">Brak pracowników w arkuszu.</div>'; return; }
+  el.innerHTML = state.workers.map(function(w){
+    return '<button class="worker-btn" onclick="showJobs(\''+esc(w)+'\')">'
+      +'<div class="worker-avatar">'+initials(w)+'</div>'
+      +'<span>'+esc(w)+'</span>'
+      +'</button>';
+  }).join('');
+}
+
+function showJobs(workerName){
+  state.currentWorker = workerName;
+  state.prevScreen = 'login';
+
+  var today = new Date(); today.setHours(0,0,0,0);
+  var jobs = state.allJobs.filter(function(j){
+    var jd = new Date(j.date); jd.setHours(0,0,0,0);
+    return j.cleaner === workerName && jd >= today;
+  });
+
+  document.getElementById('jobs-title').textContent = workerName;
+  var todayCount = jobs.filter(function(j){ return isToday(j.date); }).length;
+  document.getElementById('jobs-sub').textContent = todayCount > 0
+    ? 'Dzisiaj: '+todayCount+' | Łącznie: '+jobs.length
+    : 'Łącznie: '+jobs.length+' zadań';
+
+  renderJobs(jobs);
+  show('s-jobs');
+}
+
+function renderJobs(jobs){
+  var el = document.getElementById('jobs-content');
+  var todayJobs    = jobs.filter(function(j){ return isToday(j.date); });
+  var upcomingJobs = jobs.filter(function(j){ return !isToday(j.date); });
+  var html = '';
+
+  if(todayJobs.length){
+    html += '<p class="sec-today">Dzisiaj ('+todayJobs.length+')</p>';
+    todayJobs.forEach(function(j){ html += buildCard(j); });
+  } else {
+    html += '<div class="no-jobs">Brak zadań na dziś</div>';
+  }
+
+  if(upcomingJobs.length){
+    html += '<p class="sec-upcoming">Nadchodzące ('+upcomingJobs.length+')</p>';
+    upcomingJobs.forEach(function(j){ html += buildCard(j); });
+  }
+
+  el.innerHTML = html;
+}
+
+function showCalendar(){
+  state.prevScreen = state.currentWorker ? 'jobs' : 'login';
+
+  var today = new Date(); today.setHours(0,0,0,0);
+  var jobs = state.allJobs.filter(function(j){
+    var jd = new Date(j.date); jd.setHours(0,0,0,0);
+    return jd >= today;
+  });
+
+  // Group by month
+  var months = {};
+  jobs.forEach(function(j){
+    var d = new Date(j.date);
+    var key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    if(!months[key]) months[key]=[];
+    months[key].push(j);
+  });
+
+  var html = '';
+  Object.keys(months).sort().forEach(function(key){
+    var parts = key.split('-');
+    var mn = MONTH_NAMES_FULL[Number(parts[1])-1]+' '+parts[0];
+    var mjobs = months[key];
+    html += '<div style="margin-bottom:28px;">';
+    html += '<div class="cal-month-header"><span class="cal-month-name">'+mn+'</span><span class="cal-month-count">'+mjobs.length+' sprzątań</span></div>';
+    mjobs.forEach(function(j){
+      var d = new Date(j.date);
+      html += '<div class="cal-item'+(j.done?' done':'')+'">'
+        +'<div class="cal-date"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div>'
+        +'<div class="cal-info">'
+        +'<div class="cal-prop">🏠 '+esc(j.property)+'</div>'
+        +'<div class="cal-cleaner">👤 '+esc(j.cleaner)+(j.timeStr?' &nbsp;⏰ '+esc(j.timeStr):'')+'</div>'
+        +'<div class="cal-badges">'
+        +'<span class="badge badge-'+j.priority+'">'+j.priority+'</span>'
+        +(j.done?'<span class="cal-done-badge">✓ Done</span>':'')
+        +'</div></div></div>';
+    });
+    html += '</div>';
+  });
+
+  if(!html) html = '<div class="no-jobs">Brak zaplanowanych sprzątań</div>';
+  document.getElementById('cal-content').innerHTML = html;
+  show('s-calendar');
+}
+
+function goBackFromCalendar(){
+  if(state.prevScreen==='jobs' && state.currentWorker){
+    showJobs(state.currentWorker);
+  } else {
+    showLogin();
+  }
+}
+
+// ── Card builder ──────────────────────────────────────────────
+function buildCard(j){
+  var guests = j.numGuests ? String(j.numGuests) : '?';
+  var cardId = 'c'+j.row;
+
+  // Extras
+  var extras = [];
+  if(j.jacuzzi)     extras.push({label:'Czyszczenie jacuzzi',    cls:'extra-std'});
+  if(j.pets)        extras.push({label:'Sprzątanie po zwierzętach',cls:'extra-std'});
+  if(j.grill)       extras.push({label:'Czyszczenie grilla',     cls:'extra-std'});
+  if(j.extraTravel) extras.push({label:'Dodatkowy przejazd',     cls:'extra-std'});
+  if(j.custom)      extras.push({label:'Usługa specjalna: '+j.custom, cls:'extra-custom'});
+
+  var extrasHtml = extras.length
+    ? '<div class="extras-label">WYMAGANE DODATKOWO</div><div class="extras-list">'
+      +extras.map(function(x){ return '<div class="extra-item '+x.cls+'">'+esc(x.label)+'</div>'; }).join('')
+      +'</div>'
+    : '<div class="no-extras">Brak dodatkowych usług</div>';
+
+  var notesHtml = j.notes
+    ? '<div class="notes-box"><strong>Notatka:</strong> '+esc(j.notes)+'</div>' : '';
+
+  // Checklist
+  var clHtml = '<div class="cl-body" id="'+cardId+'-cl">';
+  CHECKLIST.forEach(function(sec, si){
+    clHtml += '<div class="cl-section-title">'+esc(sec.s)+'</div>';
+    sec.items.forEach(function(item, ii){
+      var label = item.replace(/GUESTS/g, guests);
+      var isWarn = label.indexOf('UWAGA:')===0;
+      var cbId = cardId+'_'+si+'_'+ii;
+      clHtml += '<label class="cl-item" id="lbl-'+cbId+'">'
+        +'<input type="checkbox" id="'+cbId+'" onchange="toggleCheck(\''+cbId+'\')">'
+        +'<span class="'+(isWarn?'cl-warn':'')+'">'+esc(label)+'</span>'
+        +'</label>';
+    });
+  });
+  clHtml += '</div>';
+
+  // Usterki
+  var uHtml = '';
+  if(j.usterki && j.usterki.length){
+    uHtml = j.usterki.map(function(u){
+      return '<div class="usterka-item">'
+        +'<div style="flex:1;"><div class="usterka-ts">'+esc(u.ts)+'</div><div class="usterka-text">'+esc(u.text)+'</div></div>'
+        +'<div class="usterka-btns">'
+        +'<button class="usterka-edit" onclick="editUsterka(\''+esc(u.id)+'\','+j.row+')">edytuj</button>'
+        +'<button class="usterka-del" onclick="delUsterka(\''+esc(u.id)+'\','+j.row+')">usuń</button>'
+        +'</div></div>';
+    }).join('');
+  }
+
+  // Done section
+  var doneHtml = j.done
+    ? '<div class="done-row"><span class="done-badge">✓ Gotowe</span>'
+      +'<button class="undone-btn" onclick="setDone('+j.row+',false)">Cofnij</button></div>'
+    : '<button class="done-btn" onclick="setDone('+j.row+',true)">GOTOWE ✓ — sprzątanie wykonane</button>'
+      +'<button class="nw-toggle" onclick="toggleNW(\''+cardId+'\')">✗ Sprzątanie nie zostało wykonane</button>'
+      +'<div class="nw-body" id="'+cardId+'-nw">'
+      +'<textarea class="nw-textarea" id="'+cardId+'-nwtxt" rows="3" placeholder="Wpisz powód niewykonania..."></textarea>'
+      +'<button class="nw-save" onclick="saveNW('+j.row+',\''+cardId+'\')">Zapisz powód</button>'
+      +'</div>';
+
+  return '<div class="card'+(j.done?' done':'')+'" id="'+cardId+'">'
+    +'<div class="card-top"><span class="card-prop">🏠 '+esc(j.property)+'</span>'
+    +'<span class="badge badge-'+j.priority+'">'+j.priority+'</span></div>'
+    +'<div class="card-grid">'
+    +'<div class="card-cell"><div class="card-cell-label">SPRZĄTANIE</div>'
+    +'<div class="card-cell-val">'+esc(fmtDateLong(new Date(j.date)))+'</div>'
+    +(j.timeStr?'<div class="card-cell-time">⏰ '+esc(j.timeStr)+'</div>':'')
+    +'</div>'
+    +'<div class="card-cell"><div class="card-cell-label">NASTĘPNY CHECK-IN</div>'
+    +'<div class="card-cell-val">'+(j.checkin?esc(j.checkin):'<span style="color:#aaa">Brak kolejnej rez.</span>')+'</div>'
+    +'</div></div>'
+    +'<div class="card-guests"><span class="card-guests-label">Goście:</span>'
+    +'<span class="card-guests-val">'+(j.numGuests?'👥 '+j.numGuests+' '+(j.numGuests===1?'osoba':j.numGuests<5?'osoby':'osób'):'nieznana liczba')+'</span></div>'
+    +extrasHtml+notesHtml
+    +'<button class="cl-toggle" onclick="toggleCL(\''+cardId+'\')"><span>✅ Lista kontrolna sprzątania</span><span id="'+cardId+'-ar">pokaż ▶</span></button>'
+    +clHtml
+    +'<div class="usterki-section">'
+    +'<div class="usterki-title">⚠️ Zgłoszenia usterek, zniszczeń, kradzieży i innych uwag</div>'
+    +'<div id="ul-'+j.row+'">'+uHtml+'</div>'
+    +'<textarea class="usterki-textarea" id="nt-'+j.row+'" rows="3" placeholder="Wpisz usterki, zniszczenia, braki lub inne uwagi..."></textarea>'
+    +'<button class="usterki-save-btn" onclick="addUsterka('+j.row+')">📌 Zapisz usterkę</button>'
+    +'</div>'
+    +doneHtml
+    +'</div>';
+}
+
+// ── Checklist ─────────────────────────────────────────────────
+function toggleCheck(cbId){
+  var cb = document.getElementById(cbId);
+  var lbl = document.getElementById('lbl-'+cbId);
+  if(lbl) lbl.classList.toggle('checked', cb.checked);
+}
+
+function toggleCL(cardId){
+  var cl = document.getElementById(cardId+'-cl');
+  var ar = document.getElementById(cardId+'-ar');
+  var open = cl.classList.toggle('open');
+  ar.textContent = open ? 'ukryj ▲' : 'pokaż ▶';
+}
+
+function toggleNW(cardId){
+  var el = document.getElementById(cardId+'-nw');
+  el.classList.toggle('open');
+}
+
+// ── Done ──────────────────────────────────────────────────────
+function setDone(row, done){
+  var action = done ? 'done' : 'undone';
+  // Update local state immediately (optimistic)
+  var job = state.allJobs.find(function(j){ return j.row===row; });
+  if(job){
+    job.done = done;
+    // Re-render jobs
+    if(state.currentWorker) showJobs(state.currentWorker);
+  }
+  // Send to server in background
+  apiAction('action='+action+'&row='+row+'&worker='+encodeURIComponent(state.currentWorker||''));
+}
+
+// ── Usterki ───────────────────────────────────────────────────
+function addUsterka(row){
+  var txt = document.getElementById('nt-'+row);
+  if(!txt||!txt.value.trim()){ alert('Wpisz usterkę przed zapisaniem.'); return; }
+  var val = txt.value.trim();
+  txt.value = '';
+
+  var ts = new Date();
+  var tsStr = String(ts.getDate()).padStart(2,'0')+'.'+(ts.getMonth()+1<10?'0':'')+(ts.getMonth()+1)+' '
+    +String(ts.getHours()).padStart(2,'0')+':'+String(ts.getMinutes()).padStart(2,'0');
+  var id = 'tmp-'+Date.now();
+
+  // Update local state immediately
+  var job = state.allJobs.find(function(j){ return j.row===row; });
+  if(job){
+    if(!job.usterki) job.usterki=[];
+    job.usterki.push({id:id, ts:tsStr, text:val});
+    renderUsterki(row, job.usterki);
+  }
+
+  apiAction('action=usterka_add&row='+row+'&notes='+encodeURIComponent(val)+'&worker='+encodeURIComponent(state.currentWorker||''));
+}
+
+function delUsterka(id, row){
+  if(!confirm('Usunąć tę usterkę?')) return;
+  var job = state.allJobs.find(function(j){ return j.row===row; });
+  if(job){
+    job.usterki = (job.usterki||[]).filter(function(u){ return u.id!==id; });
+    renderUsterki(row, job.usterki);
+  }
+  apiAction('action=usterka_delete&row='+row+'&id='+encodeURIComponent(id)+'&worker='+encodeURIComponent(state.currentWorker||''));
+}
+
+function editUsterka(id, row){
+  var job = state.allJobs.find(function(j){ return j.row===row; });
+  var u = job && (job.usterki||[]).find(function(u){ return u.id===id; });
+  var nv = prompt('Edytuj usterkę:', u?u.text:'');
+  if(nv===null) return;
+  nv = nv.trim();
+  if(!nv){ alert('Tekst nie może być pusty.'); return; }
+  if(u) u.text = nv;
+  if(job) renderUsterki(row, job.usterki);
+  apiAction('action=usterka_edit&row='+row+'&id='+encodeURIComponent(id)+'&notes='+encodeURIComponent(nv)+'&worker='+encodeURIComponent(state.currentWorker||''));
+}
+
+function renderUsterki(row, usterki){
+  var el = document.getElementById('ul-'+row);
+  if(!el) return;
+  if(!usterki||!usterki.length){ el.innerHTML=''; return; }
+  el.innerHTML = usterki.map(function(u){
+    return '<div class="usterka-item">'
+      +'<div style="flex:1;"><div class="usterka-ts">'+esc(u.ts)+'</div><div class="usterka-text">'+esc(u.text)+'</div></div>'
+      +'<div class="usterka-btns">'
+      +'<button class="usterka-edit" onclick="editUsterka(\''+esc(u.id)+'\','+row+')">edytuj</button>'
+      +'<button class="usterka-del" onclick="delUsterka(\''+esc(u.id)+'\','+row+')">usuń</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+function saveNW(row, cardId){
+  var txt = document.getElementById(cardId+'-nwtxt');
+  if(!txt||!txt.value.trim()){ alert('Wpisz powód niewykonania.'); return; }
+  var val = '[NIE WYKONANO] '+txt.value.trim();
+  txt.value = '';
+  document.getElementById(cardId+'-nw').classList.remove('open');
+
+  var job = state.allJobs.find(function(j){ return j.row===row; });
+  if(job){
+    if(!job.usterki) job.usterki=[];
+    var ts = new Date();
+    var tsStr = String(ts.getDate()).padStart(2,'0')+'.'+(ts.getMonth()+1<10?'0':'')+(ts.getMonth()+1)+' '
+      +String(ts.getHours()).padStart(2,'0')+':'+String(ts.getMinutes()).padStart(2,'0');
+    job.usterki.push({id:'tmp-'+Date.now(), ts:tsStr, text:val});
+    renderUsterki(row, job.usterki);
+  }
+  apiAction('action=usterka_add&row='+row+'&notes='+encodeURIComponent(val)+'&worker='+encodeURIComponent(state.currentWorker||''));
+  alert('Powód zapisany.');
+}
+
+// ── Init ──────────────────────────────────────────────────────
+function init(){
+  loadData(function(){
+    show('s-login');
+    renderLogin();
+  });
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
+
+window.addEventListener('load', function(){ init(); });
+</script>
+
+</body>
+</html>
