@@ -107,6 +107,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 /* toast powiadomienie */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;opacity:0;transition:opacity 0.2s,transform 0.2s;z-index:999;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.header-refresh{background:rgba(255,255,255,0.2);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;margin-left:auto;}
 </style>
 </head>
 <body>
@@ -135,7 +136,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
   </div>
 </div>
 
-<!-- Jobs -->
+  <!-- Jobs -->
 <div id="s-jobs" class="screen">
   <div class="header">
     <button class="header-back" onclick="showLogin()">←</button>
@@ -143,6 +144,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
       <div class="header-title" id="jobs-title">Moje sprzątania</div>
       <div class="header-sub" id="jobs-sub"></div>
     </div>
+    <button class="header-refresh" onclick="forceRefresh()">↻</button>
   </div>
   <div class="w">
     <button class="cal-btn" onclick="showCalendar()">📅 Zobacz wszystkie sprzątania</button>
@@ -532,6 +534,15 @@ function rerenderCard(job){
   tmp.innerHTML=buildCard(job);
   var newCard=tmp.firstChild;
   cardEl.parentNode.replaceChild(newCard,cardEl);
+}
+  
+function forceRefresh(){
+  state.loaded=false;
+  loadData(function(){
+    if(state.currentWorker)showJobs(state.currentWorker);
+    else showCalendar();
+    toast('✅ Odświeżono');
+  });
 }
 
 // ============================================================
