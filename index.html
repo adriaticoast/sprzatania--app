@@ -314,6 +314,8 @@ function showJobs(w){
   }
   var today=new Date();today.setHours(0,0,0,0);
   var jobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return j.cleaner===w&&jd>=today;});
+  var pastJobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return j.cleaner===w&&jd<today;});
+  pastJobs.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   document.getElementById('jobs-title').textContent=w;
   var tc=jobs.filter(function(j){return isToday(j.date);}).length;
   document.getElementById('jobs-sub').textContent=tc>0?'Dzisiaj: '+tc+' | Łącznie: '+jobs.length:'Łącznie: '+jobs.length+' zadań';
@@ -324,6 +326,10 @@ function showJobs(w){
   if(tj.length){html+='<p class="sec-today">Dzisiaj ('+tj.length+')</p>';tj.forEach(function(j){html+=buildCard(j);});}
   else{html+='<div class="no-jobs">Brak zadań na dziś</div>';}
   if(uj.length){html+='<p class="sec-upcoming">Nadchodzące ('+uj.length+')</p>';uj.forEach(function(j){html+=buildCard(j);});}
+  if(pastJobs.length){
+    html+='<p class="sec-upcoming" style="margin-top:28px;color:#bbb;border-color:#eee;">Archiwum ('+pastJobs.length+')</p>';
+    pastJobs.forEach(function(j){html+=buildCard(j);});
+  }
   document.getElementById('jobs-content').innerHTML=html;
   show('s-jobs');
 }
