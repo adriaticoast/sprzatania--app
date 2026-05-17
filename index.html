@@ -422,7 +422,8 @@ function buildCard(j){
       +'<div class="card-cell"><div class="card-cell-label">SPRZĄTANIE</div><div class="card-cell-val">'+esc(fmtDate(new Date(j.date)))+'</div>'+(j.timeStr?'<div class="card-cell-time">⏰ '+esc(j.timeStr)+'</div>':'')+'</div>'
       +'<div class="card-cell"><div class="card-cell-label">NASTĘPNY CHECK-IN</div><div class="card-cell-val">'+(j.checkin?esc(j.checkin):'<span style="color:#aaa">Brak kolejnej rez.</span>')+'</div></div>'
     +'</div>'
-    +'<div class="card-guests"><span class="card-guests-label">Goście:</span><span class="card-guests-val">'+(j.numGuests?'👥 '+j.numGuests+' '+(j.numGuests===1?'osoba':j.numGuests<5?'osoby':'osób'):'nieznana liczba')+'</span></div>'
+    +'<div class="card-guests"><span class="card-guests-label">Po ilu sprzątamy:</span><span class="card-guests-val">'+(j.numGuests?'👥 '+j.numGuests+' '+(j.numGuests===1?'osoba':j.numGuests<5?'osoby':'osób'):'nieznana liczba')+'</span></div>'
+    +'<div class="card-guests"><span class="card-guests-label">Kolejni goście:</span><span class="card-guests-val">'+(j.numGuestsNext?'👥 '+j.numGuestsNext+' '+(j.numGuestsNext===1?'osoba':j.numGuestsNext<5?'osoby':'osób'):'brak kolejnej rezerwacji')+'</span></div>'
     +eHtml+nHtml
     +'<button class="cl-toggle" onclick="toggleCL(\''+cid+'\')"><span>✅ Lista kontrolna</span><span id="'+cid+'-ar">pokaż ▶</span></button>'
     +clHtml
