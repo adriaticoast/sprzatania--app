@@ -338,6 +338,8 @@ function showCalendar(){
   if(!state.loaded){document.getElementById('cal-content').innerHTML='<div class="spinner"></div>';show('s-calendar');loadData(function(){showCalendar();});return;}
   var today=new Date();today.setHours(0,0,0,0);
   var jobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return jd>=today;});
+  var pastJobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return jd<today;});
+  pastJobs.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   var months={};
   jobs.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   jobs.forEach(function(j){var d=new Date(j.date);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!months[k])months[k]=[];months[k].push(j);});
@@ -357,6 +359,29 @@ function showCalendar(){
     });
     html+='</div>';
   });
+
+  if(pastJobs.length){
+    var pastMonths={};
+    pastJobs.forEach(function(j){var d=new Date(j.date);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!pastMonths[k])pastMonths[k]=[];pastMonths[k].push(j);});
+    html+='<div style="margin-top:28px;padding-top:16px;border-top:2px solid #eee;"><div style="font-size:14px;font-weight:500;color:#bbb;margin-bottom:16px;">📦 Archiwum</div>';
+    Object.keys(pastMonths).sort().reverse().forEach(function(k){
+      var p=k.split('-'),mn=MONTHS_FULL[Number(p[1])-1]+' '+p[0],mj=pastMonths[k];
+      html+='<div style="margin-bottom:20px;"><div class="cal-month-header" style="opacity:0.4;"><span class="cal-month-name">'+mn+'</span><span class="cal-month-count">'+mj.length+' sprzątań</span></div>';
+      mj.forEach(function(j){
+        var d=new Date(j.date);
+        html+='<div class="cal-item done" onclick="openJob(\''+esc(j.cleaner)+'\','+j.row+')" style="opacity:0.45;">'
+          +'<div class="cal-date"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div>'
+          +'<div class="cal-info">'
+            +'<div class="cal-prop">🏠 '+esc(j.property)+'</div>'
+            +'<div class="cal-cleaner">👤 '+esc(j.cleaner)+(j.timeStr?' ⏰ '+esc(j.timeStr):'')+'</div>'
+            +'<div class="cal-badges"><span class="badge badge-'+j.priority+'">'+j.priority+'</span>'+(j.done?'<span class="cal-done-badge">✓ Done</span>':'')+'</div>'
+          +'</div></div>';
+      });
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  
   if(!html)html='<div class="no-jobs">Brak zaplanowanych sprzątań</div>';
   document.getElementById('cal-content').innerHTML=html;
   show('s-calendar');
