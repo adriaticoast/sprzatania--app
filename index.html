@@ -393,7 +393,8 @@ function showCalendar(){
   
   if(!html)html='<div class="no-jobs">Brak zaplanowanych sprzątań</div>';
   document.getElementById('cal-content').innerHTML=html;
-  document.getElementById('cal-sub').textContent='Wszystkie zaplanowane: '+jobs.length+' sprzątań';
+  var totalJobs = state.allJobs.length;
+  document.getElementById('cal-sub').textContent='Łącznie: '+totalJobs+' sprzątań';
   show('s-calendar');
 }
 function goBackFromCalendar(){
