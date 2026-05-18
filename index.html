@@ -167,7 +167,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
     <button class="header-back" onclick="goBackFromCalendar()">←</button>
     <div>
       <div class="header-title">Kalendarz sprzątań</div>
-      <div class="header-sub">Wszystkie zaplanowane</div>
+      <div class="header-sub" id="cal-sub">Wszystkie zaplanowane</div>
     </div>
   </div>
   <div class="w">
@@ -393,6 +393,7 @@ function showCalendar(){
   
   if(!html)html='<div class="no-jobs">Brak zaplanowanych sprzątań</div>';
   document.getElementById('cal-content').innerHTML=html;
+  document.getElementById('cal-sub').textContent='Wszystkie zaplanowane: '+jobs.length+' sprzątań';
   show('s-calendar');
 }
 function goBackFromCalendar(){
