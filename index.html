@@ -42,6 +42,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 .badge-FLEXIBLE{background:#EAF3DE;color:#3B6D11;border:0.5px solid #97C459;}
 .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .card-cell{background:#F4F6F8;border-radius:8px;padding:9px 11px;}
+.card-cell-no-time{background:#FEF5E7;border:0.5px solid #F0A500;}
 .card-cell-label{font-size:10px;font-weight:500;color:#888;letter-spacing:0.3px;margin-bottom:3px;}
 .card-cell-val{font-size:12px;color:#333;line-height:1.4;}
 .card-cell-time{font-size:16px;font-weight:500;color:#2471A3;margin-top:3px;}
@@ -487,10 +488,12 @@ function buildCard(j){
   });
   clHtml+='</div>';
 
-  var leftCell='<div class="card-cell">'
+  var leftCell='<div class="card-cell'+((!j.timeStr)?' card-cell-no-time':'')+'"">'
     +'<div class="card-cell-label">SPRZĄTANIE</div>'
     +'<div class="card-cell-val">'+esc(fmtDate(new Date(j.date)))+'</div>'
-    +(j.timeStr?'<div class="card-cell-time">⏰ '+esc(j.timeStr)+'</div>':'')
+    +(j.timeStr
+      ?'<div class="card-cell-time">⏰ '+esc(j.timeStr)+'</div>'
+      :'<div class="card-cell-time" style="color:#E67E22;font-size:13px;">⚠️ Godzina do ustalenia</div>')
     +(j.numGuests!==null&&j.numGuests!==undefined?'<div class="card-cell-time">👥 '+j.numGuests+' '+guestsStr(j.numGuests)+'</div>':'')
     +'</div>';
   var hasNext=j.numGuestsNext!==null&&j.numGuestsNext!==undefined;
