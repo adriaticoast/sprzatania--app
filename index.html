@@ -342,7 +342,14 @@ function showCalendar(){
   var pastJobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return jd<today;});
   pastJobs.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   var months={};
-  jobs.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  jobs.sort(function(a,b){
+  var dateDiff=new Date(a.date)-new Date(b.date);
+  if(dateDiff!==0)return dateDiff;
+  // Ten sam dzień — sortuj wg godziny
+  var aTime=a.timeStr||'99:99';
+  var bTime=b.timeStr||'99:99';
+  return aTime.localeCompare(bTime);
+});
   jobs.forEach(function(j){var d=new Date(j.date);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!months[k])months[k]=[];months[k].push(j);});
   var html='';
   Object.keys(months).sort().forEach(function(k){
