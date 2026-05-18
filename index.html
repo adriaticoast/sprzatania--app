@@ -321,7 +321,13 @@ function showJobs(w){
   document.getElementById('jobs-title').textContent=w;
   var tc=jobs.filter(function(j){return isToday(j.date);}).length;
   document.getElementById('jobs-sub').textContent=tc>0?'Dzisiaj: '+tc+' | Łącznie: '+jobs.length:'Łącznie: '+jobs.length+' zadań';
-  jobs.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  jobs.sort(function(a,b){
+  var dateDiff=new Date(a.date)-new Date(b.date);
+  if(dateDiff!==0)return dateDiff;
+  var aTime=a.timeStr||'99:99';
+  var bTime=b.timeStr||'99:99';
+  return aTime.localeCompare(bTime);
+});
   var tj=jobs.filter(function(j){return isToday(j.date);});
   var uj=jobs.filter(function(j){return !isToday(j.date);});
   var html='';
