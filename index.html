@@ -472,7 +472,7 @@ function openJob(cleaner,row){
 
 // ── Build card ────────────────────────────────────────────────
 function buildCard(j){
-  var g=(j.numGuests!==null&&j.numGuests!==undefined)?String(j.numGuests):'?';
+  var g=(j.numGuestsNext!==null&&j.numGuestsNext!==undefined)?String(j.numGuestsNext):(j.numGuests!==null&&j.numGuests!==undefined)?String(j.numGuests):'?';
   var cid='c'+j.row;
   var cl=j.checklist||{};
   var checked=0;
