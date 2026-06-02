@@ -448,6 +448,12 @@ function showPreSeason(){
   }
   var ps=state.preSeason;
   var ordered=ps.filter(function(p){return p.ordered;});
+  ordered.sort(function(a,b){
+    if(!a.date&&!b.date)return 0;
+    if(!a.date)return 1;
+    if(!b.date)return -1;
+    return a.date.localeCompare(b.date);
+  });
   var notOrdered=ps.filter(function(p){return !p.ordered;});
   var html='';
   if(ordered.length){
