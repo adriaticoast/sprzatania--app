@@ -454,10 +454,12 @@ function showPreSeason(){
     html+='<div class="ps-section-title">✅ Zamówione ('+ordered.length+')</div>';
     ordered.forEach(function(p){
       html+='<div class="ps-item" id="ps-'+esc(p.property).replace(/\s/g,'-')+'">'
-        +'<div class="ps-icon">🏠</div>'
-        +'<div class="ps-info"><div class="ps-prop">'+esc(p.property)+'</div><div class="ps-date">'+(p.date?'📅 '+fmtDateFromKey(p.date):'Brak daty')+'</div></div>'
-        +'<span class="ps-badge-yes">TAK</span>'
-        +'</div>';
+  +'<div class="ps-icon">🏠</div>'
+  +'<div class="ps-info"><div class="ps-prop">'+esc(p.property)+'</div><div class="ps-date">'+(p.date?'📅 '+fmtDateFromKey(p.date):'Brak daty')+'</div>'
+  +(p.details?'<div style="font-size:12px;color:#444;margin-top:4px;padding-top:4px;border-top:0.5px solid #eee;">📋 '+esc(p.details)+'</div>':'')
+  +'</div>'
+  +'<span class="ps-badge-yes">TAK</span>'
+  +'</div>';
     });
   }
   if(notOrdered.length){
