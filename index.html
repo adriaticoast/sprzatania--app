@@ -619,8 +619,12 @@ function renderPropertyDetail(idx){
   } else {
     html+='<div class="no-jobs" style="margin-bottom:8px;">Brak zdjęć</div>';
   }
-  html+='<input type="file" accept="image/*" capture="environment" class="photo-input" id="prop-photo-input-'+idx+'" onchange="uploadPropPhoto('+idx+',this)">'
-    +'<button class="prop-add-photo-btn" onclick="document.getElementById(\'prop-photo-input-'+idx+'\').click()">📸 Dodaj zdjęcie domku</button>';
+  html+'<input type="file" accept="image/*" capture="environment" class="photo-input" id="prop-photo-cam-'+idx+'" onchange="uploadPropPhoto('+idx+',this)">'
++'<input type="file" accept="image/*" class="photo-input" id="prop-photo-gal-'+idx+'" onchange="uploadPropPhoto('+idx+',this)">'
++'<div style="display:flex;gap:6px;margin-top:6px;">'
++'<button class="prop-add-photo-btn" style="flex:1;" onclick="document.getElementById(\'prop-photo-cam-'+idx+'\').click()">📷 Zrób zdjęcie</button>'
++'<button class="prop-add-photo-btn" style="flex:1;" onclick="document.getElementById(\'prop-photo-gal-'+idx+'\').click()">🖼️ Z galerii</button>'
++'</div>';
 
   // Uwagi
   html+='<div class="prop-section-title">📝 Uwagi do domku</div>';
@@ -672,12 +676,12 @@ function uploadPropPhoto(idx,input){
   var reader=new FileReader();
   reader.onload=function(e){
     var base64=e.target.result.split(',')[1];
-    var formData=new FormData();
-    formData.append('action','prop_photo_add');
-    formData.append('prow',String(p.sheetRow));
-    formData.append('filename','prop_'+p.sheetRow+'_'+Date.now()+'.jpg');
-    formData.append('photo',base64);
-    fetch(API,{method:'POST',body:formData,cache:'no-store'})
+    fetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'action=prop_photo_add&prow='+encodeURIComponent(p.sheetRow)+'&filename='+encodeURIComponent('prop_'+p.sheetRow+'_'+Date.now()+'.jpg')+'&photo='+encodeURIComponent(base64),
+      cache:'no-store'
+    })
       .then(function(r){return r.json();})
       .then(function(data){
         if(data.ok){
@@ -835,13 +839,30 @@ function uploadPhoto(row,input){
   var reader=new FileReader();
   reader.onload=function(e){
     var base64=e.target.result.split(',')[1];
-    var formData=new FormData();
-    formData.append('action','photo_upload');
-    formData.append('row',String(row));
-    formData.append('worker',state.currentWorker||'');
-    formData.append('filename','usterka_'+row+'_'+Date.now()+'.jpg');
-    formData.append('photo',base64);
-    fetch(API,{method:'POST',body:formData,cache:'no-store'})
+    fetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'action=photo_upload&row='+encodeURIComponent(row)+'&worker='+encodeURIComponent(state.currentWorker||'')+'&filename='+encodeURIComponent('usterka_'+row+'_'+Date.now()+'.jpg')+'&photo='+encodeURIComponent(base64),
+      cache:'no-store'
+    })
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(data.ok){
+          var job=state.allJobs.find(function(j){return j.row===row;});
+          if(job){
+            if(!job.usterki)job.usterki=[];
+            job.usterki.push({id:'loc-'+Date.now(),ts:nowTs(),text:'📸 [ZDJĘCIE]',photo:data.url});
+            lsSaveUsterki(row,job.usterki);
+            renderU(row,job.usterki);
+          }
+          toast('✅ Zdjęcie zapisane');
+        } else {toast('❌ Błąd wysyłania zdjęcia');}
+      })
+      .catch(function(){toast('❌ Błąd połączenia');});
+  };
+  reader.readAsDataURL(input.files[0]);
+  input.value='';
+}
       .then(function(r){return r.json();})
       .then(function(data){
         if(data.ok){
@@ -921,8 +942,12 @@ function buildCard(j){
     +'<div id="ul-'+j.row+'">'+uHtml+'</div>'
     +'<textarea class="usterki-textarea" id="nt-'+j.row+'" rows="3" placeholder="Wpisz usterki, zniszczenia, braki..."></textarea>'
     +'<button class="usterki-save-btn" onclick="addU('+j.row+')">📌 Zapisz usterkę</button>'
-    +'<input type="file" accept="image/*" capture="environment" class="photo-input" id="photo-'+j.row+'" onchange="uploadPhoto('+j.row+',this)">'
-    +'<button class="photo-btn" onclick="document.getElementById(\'photo-'+j.row+'\').click()">📸 Dodaj zdjęcie usterki</button>'
+    +'<input type="file" accept="image/*" capture="environment" class="photo-input" id="photo-cam-'+j.row+'" onchange="uploadPhoto('+j.row+',this)">'
+    +'<input type="file" accept="image/*" class="photo-input" id="photo-gal-'+j.row+'" onchange="uploadPhoto('+j.row+',this)">'
+    +'<div style="display:flex;gap:6px;margin-top:6px;">'
+    +'<button class="photo-btn" style="flex:1;" onclick="document.getElementById(\'photo-cam-'+j.row+'\').click()">📷 Zrób zdjęcie</button>'
+    +'<button class="photo-btn" style="flex:1;" onclick="document.getElementById(\'photo-gal-'+j.row+'\').click()">🖼️ Z galerii</button>'
+    +'</div>'
     +'</div>'
     +timerHtml+dHtml+'</div>';
 }
