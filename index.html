@@ -287,6 +287,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 <script>
 var API='https://script.google.com/macros/s/AKfycby6owGp3pBJ3RQtyXd0A6xwjNEtWWbxHy21GhzYBiVqJj8oUutw6ZOm0jSkeYRh7qB9/exec';
 var REPORT_PASSWORD='MopandGo2026$';
+var PROPS_PASSWORD='MG$';
 var state={workers:[],allJobs:[],preSeason:[],properties:[],currentWorker:null,prevScreen:'login',loaded:false,reportUnlocked:false,propsUnlocked:false,currentPropIdx:null};
 var LS_DONE='sp_done',LS_USTERKI='sp_usterki',LS_CHECKLIST='sp_checklist';
 
@@ -527,6 +528,7 @@ function openJob(cleaner,row){
 
 // ── Properties ────────────────────────────────────────────────
 function showPropertiesLogin(){
+  try{if(sessionStorage.getItem('props_unlocked')==='1')state.propsUnlocked=true;}catch(e){}
   if(state.propsUnlocked){showPropertiesList();return;}
   show('s-properties');
   document.getElementById('props-sub').textContent='';
@@ -539,9 +541,13 @@ function showPropertiesLogin(){
     +'<div class="report-pin-error" id="props-pin-error"></div>'
     +'</div>';
 }
-function checkPropsPin(){
+  function checkPropsPin(){
   var val=document.getElementById('props-pin').value;
-  if(val===REPORT_PASSWORD){state.propsUnlocked=true;showPropertiesList();}
+  if(val===PROPS_PASSWORD){
+    state.propsUnlocked=true;
+    try{sessionStorage.setItem('props_unlocked','1');}catch(e){}
+    showPropertiesList();
+  }
   else{document.getElementById('props-pin-error').textContent='Nieprawidłowe hasło';document.getElementById('props-pin').value='';}
 }
 function showPropertiesList(){
