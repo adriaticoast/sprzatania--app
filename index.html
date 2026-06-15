@@ -869,25 +869,7 @@ function uploadPhoto(row,input){
   reader.readAsDataURL(input.files[0]);
   input.value='';
 }
-      .then(function(r){return r.json();})
-      .then(function(data){
-        if(data.ok){
-          var job=state.allJobs.find(function(j){return j.row===row;});
-          if(job){
-            if(!job.usterki)job.usterki=[];
-            job.usterki.push({id:'loc-'+Date.now(),ts:nowTs(),text:'📸 [ZDJĘCIE]',photo:data.url});
-            lsSaveUsterki(row,job.usterki);
-            renderU(row,job.usterki);
-          }
-          toast('✅ Zdjęcie zapisane');
-        } else {toast('❌ Błąd wysyłania zdjęcia');}
-      })
-      .catch(function(){toast('❌ Błąd połączenia');});
-  };
-  reader.readAsDataURL(input.files[0]);
-  input.value='';
-}
-
+  
 // ── Build card ────────────────────────────────────────────────
 function buildCard(j){
   var g=(j.numGuestsNext!==null&&j.numGuestsNext!==undefined)?String(j.numGuestsNext):(j.numGuests!==null&&j.numGuests!==undefined)?String(j.numGuests):'?';
