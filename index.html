@@ -733,7 +733,7 @@ function uploadPropPhoto(idx,input){
       body:'action=prop_photo_add&prow='+encodeURIComponent(p.sheetRow)+'&filename='+encodeURIComponent('prop_'+p.sheetRow+'_'+Date.now()+'.jpg')+'&photo='+encodeURIComponent(base64),cache:'no-store'})
       .then(function(r){return r.json();}).then(function(data){
         if(data.ok){if(!p.zdjecia)p.zdjecia=[];p.zdjecia.push({id:'loc-'+Date.now(),ts:nowTs(),url:data.url});renderPropertyDetail(idx);toast('✅ Zdjęcie zapisane');}
-        else{toast('❌ Błąd wysyłania');}
+        else{toast('❌ '+JSON.stringify(data),6000);}
       }).catch(function(){toast('❌ Błąd połączenia');});
   };
   reader.readAsDataURL(input.files[0]);input.value='';
@@ -1411,7 +1411,7 @@ function uploadPhoto(row,input){
             renderU(row,job.usterki);
           }
           toast('✅ Zdjęcie zapisane');
-        } else {toast('❌ Błąd wysyłania');}
+        } else {toast('❌ '+JSON.stringify(data),6000);}
       }).catch(function(){toast('❌ Błąd połączenia');});
   };
   reader.readAsDataURL(input.files[0]);input.value='';
