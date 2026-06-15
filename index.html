@@ -1367,11 +1367,9 @@ function deleteLaundryNote(lrow,noteIdx){
   if(!confirm('Usunąć uwagę?'))return;
   var entry=(state.laundry||[]).find(function(l){return String(l.lrow)===String(lrow);});
   if(!entry)return;
-  var lines=entry.notes?entry.notes.split('
-').filter(function(n){return n.trim();}) :[];
+  var lines=entry.notes?entry.notes.split('\n').filter(function(n){return n.trim();}) :[];
   lines.splice(noteIdx,1);
-  entry.notes=lines.join('
-');
+  entry.notes=lines.join('\n');
   apiAction('action=laundry_note_del&lrow='+encodeURIComponent(lrow)+'&idx='+encodeURIComponent(noteIdx));
   toast('🗑 Uwaga usunięta');
   showLaundry();
