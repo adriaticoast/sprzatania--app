@@ -446,8 +446,8 @@ function showCalendar(){
       }
       var calAlert='';
       if(!j.timeStr) calAlert='<span style="font-size:10px;font-weight:500;background:#FF5722;color:#fff;padding:2px 7px;border-radius:20px;">👷 Potrzebny dodatkowy pracownik</span>';
-      else if(j.timeStr>='20:00') calAlert='<span style="font-size:10px;font-weight:500;background:#F9F100;color:#7D6608;border:0.5px solid #F0D800;padding:2px 7px;border-radius:20px;">🌙 Długi dzień pracy</span>';
-      var calDateBg=!j.timeStr?'background:#FFCCBC;':(j.timeStr>='20:00'?'background:#FFF176;':'');
+      else if(j.timeStr>='17:00') calAlert='<span style="font-size:10px;font-weight:500;background:#F9F100;color:#7D6608;border:0.5px solid #F0D800;padding:2px 7px;border-radius:20px;">🌙 Długi dzień pracy</span>';
+      var calDateBg=!j.timeStr?'background:#FFCCBC;':(j.timeStr>='17:00'?'background:#FFF176;':'');
       html+='<div class="cal-item'+(j.done?' done':'')+'" onclick="openJob(\''+esc(j.cleaner)+'\','+j.row+')">'
         +'<div class="cal-date" style="'+calDateBg+'"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div>'
         +'<div class="cal-info"><div class="cal-prop">🏠 '+esc(j.property)+'</div><div class="cal-cleaner">👤 '+esc(j.cleaner)+(j.timeStr?' ⏰ '+esc(j.timeStr):'')+'</div><div class="cal-badges"><span class="badge badge-'+j.priority+'">'+j.priority+'</span>'+(j.done?'<span class="cal-done-badge">✓ Done</span>':'')+calAlert+'</div></div></div>';
