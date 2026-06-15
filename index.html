@@ -846,10 +846,17 @@ function addLaundry(){
   if(!kg||kg<=0){alert('Wpisz ilość kg.');return;}
   var price=(kg*4.5).toFixed(2);
   var newEntry={lrow:'loc-'+Date.now(),property:prop,date:date,kg:kg,price:parseFloat(price),notes:notes,photos:[]};
+  if(!state.laundry)state.laundry=[];
   state.laundry.push(newEntry);
-  apiAction('action=laundry_add&property='+encodeURIComponent(prop)+'&date='+encodeURIComponent(date)+'&kg='+encodeURIComponent(kg)+'&notes='+encodeURIComponent(notes));
   toast('✅ Pranie zapisane ('+kg+' kg = '+price+' EUR)');
   showLaundry();
+  // Pobierz prawdziwy numer wiersza z arkusza
+  var url=API+'?action=laundry_add&property='+encodeURIComponent(prop)+'&date='+encodeURIComponent(date)+'&kg='+encodeURIComponent(kg)+'&notes='+encodeURIComponent(notes)+'&_='+Date.now();
+  fetch(url,{cache:'no-store'}).then(function(r){return r.json();}).then(function(data){
+    if(data.ok&&data.lrow){
+      newEntry.lrow=data.lrow;
+    }
+  }).catch(function(){});
 }
 function addLaundryNote(lrow){
   var input=document.getElementById('l-note-'+lrow);
