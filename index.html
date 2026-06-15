@@ -1132,10 +1132,16 @@ function addLaundry(){
   if(!kg||kg<=0){alert('Wpisz ilość kg.');return;}
   var price=(kg*4.5).toFixed(2);
   if(!state.laundry)state.laundry=[];
-  state.laundry.push({lrow:'loc-'+Date.now(),property:prop,date:date,kg:kg,price:parseFloat(price),notes:notes,photos:[]});
-  apiAction('action=laundry_add&property='+encodeURIComponent(prop)+'&date='+encodeURIComponent(date)+'&kg='+encodeURIComponent(kg)+'&notes='+encodeURIComponent(notes));
+  var tempId='loc-'+Date.now();
+  var newEntry={lrow:tempId,property:prop,date:date,kg:kg,price:parseFloat(price),notes:notes,photos:[]};
+  state.laundry.push(newEntry);
   toast('✅ Pranie zapisane ('+kg+' kg = '+price+' EUR)');
   showLaundry();
+  // Zapisz do arkusza i zaktualizuj lrow na prawdziwy numer wiersza
+  var url=API+'?action=laundry_add&property='+encodeURIComponent(prop)+'&date='+encodeURIComponent(date)+'&kg='+encodeURIComponent(kg)+'&notes='+encodeURIComponent(notes)+'&_='+Date.now();
+  fetch(url,{cache:'no-store'}).then(function(r){return r.json();}).then(function(data){
+    if(data.ok&&data.lrow){newEntry.lrow=data.lrow;}
+  }).catch(function(){});
 }
 function addLaundryNote(lrow){
   var input=document.getElementById('l-note-'+lrow);
@@ -1220,9 +1226,10 @@ function buildCard(j){
     +(hasNext?'<div class="card-cell-time">👥 '+j.numGuestsNext+' '+guestsStr(j.numGuestsNext)+'</div>':'')+'</div>';
   var progressHtml='<div class="cl-progress-bar"><div class="cl-progress-fill" id="pfill-'+j.row+'" style="width:'+pct+'%"></div></div>'
     +'<div class="cl-progress-txt" id="ppct-'+j.row+'">'+checked+' / '+CL_TOTAL+' punktów ('+pct+'%)</div>';
-  var timerHtml='<div class="timer-section"><div class="timer-display" id="tdisp-'+j.row+'">00:00:00</div>'
+  var savedTime=j.timerTime||'';
+  var timerHtml='<div class="timer-section"><div class="timer-display" id="tdisp-'+j.row+'">'+(savedTime||'00:00:00')+'</div>'
     +'<button class="timer-btn-start" id="tbtn-'+j.row+'" onclick="timerStart('+j.row+')">▶ Zaczynam sprzątanie</button>'
-    +'<div class="timer-result" id="tres-'+j.row+'"></div></div>';
+    +'<div class="timer-result" id="tres-'+j.row+'">'+(savedTime?'✓ Ostatni czas: '+savedTime:'')+'</div></div>';
   var dHtml='';
   if(j.done){
     dHtml='<div class="done-row"><span class="done-badge">✓ Gotowe</span><button class="undone-btn" onclick="setDone('+j.row+',false)">↩ Cofnij</button></div>';
@@ -1385,6 +1392,31 @@ function deleteLaundryPhoto(lrow,photoId){
   showLaundry();
 }
 
+function uploadPhoto(row,input){
+  if(!input.files||!input.files[0])return;
+  toast('📸 Wysyłanie zdjęcia...',5000);
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var base64=e.target.result.split(',')[1];
+    fetch(API,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:'action=photo_upload&row='+encodeURIComponent(row)+'&filename='+encodeURIComponent('usterka_'+row+'_'+Date.now()+'.jpg')+'&photo='+encodeURIComponent(base64),cache:'no-store'})
+      .then(function(r){return r.json();}).then(function(data){
+        if(data.ok){
+          var job=state.allJobs.find(function(j){return j.row===row;});
+          if(job){
+            if(!job.usterki)job.usterki=[];
+            var u={id:'loc-'+Date.now(),ts:nowTs(),text:'📸 [ZDJĘCIE]',photo:data.url};
+            job.usterki.push(u);
+            lsSaveUsterki(row,job.usterki);
+            renderU(row,job.usterki);
+          }
+          toast('✅ Zdjęcie zapisane');
+        } else {toast('❌ Błąd wysyłania');}
+      }).catch(function(){toast('❌ Błąd połączenia');});
+  };
+  reader.readAsDataURL(input.files[0]);input.value='';
+}
+  
 function init(){loadData(function(){if(state.workers.length)renderLogin();});}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
 window.addEventListener('load',function(){init();});
