@@ -360,7 +360,7 @@ var CHECKLIST=[
   {s:'Kuchnia',items:['UWAGA: Odkamienić baterie!','Wyciągnąć naczynia ze zmywarki','Wyczyścić sitka w zmywarce','Zostawić 3 kostki do zmywarki','Sprawdzić czystość schowanych naczyń i sztućców, umyć w razie potrzeby','Wyczyścić blat kuchenny','Wyczyścić zlew','Dać 1 nową gąbeczkę do naczyń','Uzupełnić dozowniki z mydłem/płynem do naczyń','Wyczyścić ekspres do kawy - wyciągnąć zużyte kapsułki i wylać wodę','Umyć lodówkę','Wyczyścić kuchenkę i płytę grzewczą','Wylać wodę z czajnika','Sprawdzić czystość airfryera lub/i piekarnika i umyć w razie potrzeby','Wyrzucić śmieci z kosza','Zostawić 1 worek na śmieci pod zlewem','Przeliczyć sztućce, talerze, szklanki i kubki - zapisać braki i uzupełnić']},
   {s:'Łazienka',items:['UWAGA: Odkamienić baterie!','Wyczyścić odpływ pod prysznicem','Wyczyścić toaletę i sprawdzić, czy jest 1 pieczątka zapachowa; w razie braku- uzupełnić','Wymienić wodę w szczotce do toalety','Wyczyścić prysznic (smugi na kabinie!)/wannę','Umyć umywalkę','Uzupełnić dozowniki z mydłem','Wyczyścić lustra','Dać 2 rolki papieru toaletowego','Opróżnić kosz na śmieci i dać nowy worek','Sprawdzić wnętrze pralki']},
   {s:'Podłogi i ogólne',items:['Odkurzyć wszystkie podłogi (pod łóżkami + odsunąć kanapy!)','Umyć podłogi na mokro (pod łóżkami + odsunąć kanapy!)','Sprawdzić kąty i trudno dostępne miejsca','Wywietrzyć pomieszczenia','Przetrzeć kurz (szafki, półki, lampki)','Przetrzeć TV','*W razie potrzeby umyć okna']},
-  {s:'Balkon / taras',items:['Pozamiatać podłogę','Wytrzeć stół i krzesła','Sprawdzić popielniczki','Usunąć śmieci','Sprawdzić czystość grilla i wyczyścić w razie potrzeby','Sprawdzić ogólny porządek']},
+  {s:'Balkon / taras',items:['*UWAGA: Odkamienić prysznic na zewnątrz!','Pozamiatać podłogę','Wytrzeć stół i krzesła','Sprawdzić popielniczki','Usunąć śmieci','Sprawdzić czystość grilla i wyczyścić w razie potrzeby','Sprawdzić ogólny porządek']},
   {s:'Na koniec',items:['Sprawdzić czy wszystko działa (światło, sprzęty)','Zamknąć okna i drzwi','Ostatnia kontrola wizualna']}
 ];
 var CL_TOTAL=0;
@@ -1117,9 +1117,13 @@ function buildCard(j){
   var progressHtml='<div class="cl-progress-bar"><div class="cl-progress-fill" id="pfill-'+j.row+'" style="width:'+pct+'%"></div></div>'
     +'<div class="cl-progress-txt" id="ppct-'+j.row+'">'+checked+' / '+CL_TOTAL+' punktów ('+pct+'%)</div>';
   var savedTime=j.timerTime||'';
-  var timerHtml='<div class="timer-section"><div class="timer-display" id="tdisp-'+j.row+'">'+(savedTime||'00:00:00')+'</div>'
+  // Wyczyść jeśli to nie jest format HH:MM:SS
+  if(savedTime&&!savedTime.match(/^\d{2}:\d{2}:\d{2}$/))savedTime='';
+  var timerHtml='<div class="timer-section">'
+    +'<div class="timer-display" id="tdisp-'+j.row+'">'+(savedTime||'00:00:00')+'</div>'
     +'<button class="timer-btn-start" id="tbtn-'+j.row+'" onclick="timerStart('+j.row+')">▶ Zaczynam sprzątanie</button>'
-    +'<div class="timer-result" id="tres-'+j.row+'">'+(savedTime?'✓ Ostatni czas: '+savedTime:'')+'</div></div>';
+    +(savedTime?'<div class="timer-result" id="tres-'+j.row+'">✓ Ostatni czas: '+savedTime+'</div>':'<div class="timer-result" id="tres-'+j.row+'"></div>')
+    +'</div>';
   var dHtml='';
   if(j.done){
     dHtml='<div class="done-row"><span class="done-badge">✓ Gotowe</span><button class="undone-btn" onclick="setDone('+j.row+',false)">↩ Cofnij</button></div>';
