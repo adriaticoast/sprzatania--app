@@ -233,7 +233,14 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
       <div class="header-sub" id="cal-sub">Wszystkie zaplanowane</div>
     </div>
   </div>
-  <div class="w"><div id="cal-content"></div></div>
+  <div class="w">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:#fff;border-radius:10px;border:0.5px solid #ddd;font-size:11px;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:#FFD580;border-radius:3px;flex-shrink:0;"></span>⏰ Godziny awaryjne</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:#FF6B6B;border-radius:3px;flex-shrink:0;"></span>⚠️ Dzień przeciążony</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:#EAF3DE;border-radius:3px;flex-shrink:0;"></span>🌱 Pre-season</span>
+    </div>
+    <div id="cal-content"></div>
+  </div>
 </div>
 
 <!-- Pre-season -->
