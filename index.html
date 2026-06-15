@@ -625,7 +625,7 @@ function renderPropertyDetail(idx){
   } else {
     html+='<div class="no-jobs" style="margin-bottom:8px;">Brak zdjęć</div>';
   }
-  html+'<input type="file" accept="image/*" capture="environment" class="photo-input" id="prop-photo-cam-'+idx+'" onchange="uploadPropPhoto('+idx+',this)">'
+  html+='<input type="file" accept="image/*" capture="environment" class="photo-input" id="prop-photo-cam-'+idx+'" onchange="uploadPropPhoto('+idx+',this)">'
 +'<input type="file" accept="image/*" class="photo-input" id="prop-photo-gal-'+idx+'" onchange="uploadPropPhoto('+idx+',this)">'
 +'<div style="display:flex;gap:6px;margin-top:6px;">'
 +'<button class="prop-add-photo-btn" style="flex:1;" onclick="document.getElementById(\'prop-photo-cam-'+idx+'\').click()">📷 Zrób zdjęcie</button>'
