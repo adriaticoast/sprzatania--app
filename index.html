@@ -1158,6 +1158,98 @@ function forceRefresh(){
   loadData(function(){if(state.currentWorker)showJobs(state.currentWorker);else showCalendar();toast('✅ Odświeżono');});
 }
 
+function uploadPhotoMulti(row,input){
+  if(!input.files||!input.files.length)return;
+  var files=Array.from(input.files);
+  toast('📸 Wysyłanie '+files.length+' plików...',8000);
+  var idx=0;
+  function next(){
+    if(idx>=files.length){toast('✅ Wszystkie pliki zapisane');return;}
+    var file=files[idx++];
+    var isVideo=file.type.indexOf('video')===0;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var base64=e.target.result.split(',')[1];
+      fetch(API,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'action=photo_upload&row='+encodeURIComponent(row)+'&worker='+encodeURIComponent(state.currentWorker||'')
+          +'&filename='+encodeURIComponent((isVideo?'video':'photo')+'_'+row+'_'+Date.now()+(isVideo?'.mp4':'.jpg'))
+          +'&mimetype='+encodeURIComponent(file.type)+'&photo='+encodeURIComponent(base64),cache:'no-store'})
+        .then(function(r){return r.json();}).then(function(data){
+          if(data.ok){
+            var job=state.allJobs.find(function(j){return j.row===row;});
+            if(job){
+              if(!job.usterki)job.usterki=[];
+              job.usterki.push({id:'loc-'+Date.now(),ts:nowTs(),text:isVideo?'🎥 [FILMIK]':'📸 [ZDJĘCIE]',photo:data.url,isVideo:isVideo});
+              lsSaveUsterki(row,job.usterki);renderU(row,job.usterki);
+            }
+          }
+          next();
+        }).catch(function(){next();});
+    };
+    reader.readAsDataURL(file);
+  }
+  next();
+  input.value='';
+}
+
+function uploadLaundryPhotoMulti(lrow,input){
+  if(!input.files||!input.files.length)return;
+  var files=Array.from(input.files);
+  toast('📸 Wysyłanie '+files.length+' plików...',8000);
+  var idx=0;
+  function next(){
+    if(idx>=files.length){toast('✅ Wszystkie pliki zapisane');showLaundry();return;}
+    var file=files[idx++];
+    var isVideo=file.type.indexOf('video')===0;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var base64=e.target.result.split(',')[1];
+      fetch(API,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'action=laundry_photo_add&lrow='+encodeURIComponent(lrow)
+          +'&filename='+encodeURIComponent('laundry_'+lrow+'_'+Date.now()+(isVideo?'.mp4':'.jpg'))
+          +'&mimetype='+encodeURIComponent(file.type)+'&photo='+encodeURIComponent(base64),cache:'no-store'})
+        .then(function(r){return r.json();}).then(function(data){
+          if(data.ok){
+            var entry=state.laundry.find(function(l){return String(l.lrow)===String(lrow);});
+            if(entry){if(!entry.photos)entry.photos=[];entry.photos.push({id:'loc-'+Date.now(),ts:nowTs(),url:data.url,isVideo:isVideo});}
+          }
+          next();
+        }).catch(function(){next();});
+    };
+    reader.readAsDataURL(file);
+  }
+  next();
+  input.value='';
+}
+
+function uploadPropPhotoMulti(idx,input){
+  if(!input.files||!input.files.length)return;
+  var files=Array.from(input.files);
+  var p=state.properties[idx];if(!p)return;
+  toast('📸 Wysyłanie '+files.length+' plików...',8000);
+  var fi=0;
+  function next(){
+    if(fi>=files.length){toast('✅ Wszystkie pliki zapisane');renderPropertyDetail(idx);return;}
+    var file=files[fi++];
+    var isVideo=file.type.indexOf('video')===0;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var base64=e.target.result.split(',')[1];
+      fetch(API,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'action=prop_photo_add&prow='+encodeURIComponent(p.sheetRow)
+          +'&filename='+encodeURIComponent('prop_'+p.sheetRow+'_'+Date.now()+(isVideo?'.mp4':'.jpg'))
+          +'&mimetype='+encodeURIComponent(file.type)+'&photo='+encodeURIComponent(base64),cache:'no-store'})
+        .then(function(r){return r.json();}).then(function(data){
+          if(data.ok){if(!p.zdjecia)p.zdjecia=[];p.zdjecia.push({id:'loc-'+Date.now(),ts:nowTs(),url:data.url,isVideo:isVideo});}
+          next();
+        }).catch(function(){next();});
+    };
+    reader.readAsDataURL(file);
+  }
+  next();
+  input.value='';
+}
+
 function init(){loadData(function(){if(state.workers.length)renderLogin();});}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
 window.addEventListener('load',function(){init();});
