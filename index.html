@@ -764,7 +764,7 @@ function showLaundry(){
     +'</div>'
     +'<div style="background:#E0F7FA;border-radius:8px;padding:10px;text-align:center;margin-bottom:8px;" id="l-price-display">'
     +'<div style="font-size:22px;font-weight:700;color:#00838F;" id="l-price-val">0.00 EUR</div>'
-    +'<div style="font-size:11px;color:#555;margin-top:2px;">Cena (4.50 EUR/kg)</div>'
+    '<div style="font-size:11px;color:#555;margin-top:2px;">Cena (4.00 EUR/kg)</div>'
     +'</div>'
     +'<textarea style="width:100%;padding:9px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;color:#222;background:#FAFAFA;resize:vertical;font-family:inherit;margin-bottom:8px;" id="l-notes" rows="2" placeholder="Uwagi (opcjonalnie)"></textarea>'
     +'<button style="width:100%;padding:12px;background:#00838F;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;" onclick="addLaundry()">💾 Zapisz wpis prania</button>'
@@ -832,7 +832,7 @@ function showLaundry(){
 
 function updateLaundryPrice(){
   var kg=parseFloat(document.getElementById('l-kg').value)||0;
-  var price=(kg*4.5).toFixed(2);
+  var price=(kg*4).toFixed(2);
   var el=document.getElementById('l-price-val');
   if(el)el.textContent=price+' EUR';
 }
@@ -844,7 +844,7 @@ function addLaundry(){
   if(!prop){alert('Wybierz domek.');return;}
   if(!date){alert('Wpisz datę.');return;}
   if(!kg||kg<=0){alert('Wpisz ilość kg.');return;}
-  var price=(kg*4.5).toFixed(2);
+  var price=(kg*4).toFixed(2);
   var newEntry={lrow:'loc-'+Date.now(),property:prop,date:date,kg:kg,price:parseFloat(price),notes:notes,photos:[]};
   if(!state.laundry)state.laundry=[];
   state.laundry.push(newEntry);
@@ -1251,7 +1251,7 @@ function editLaundryEntry(lrow){
   if(newKg===null)return;
   newKg=parseFloat(newKg);
   if(!newKg||newKg<=0){alert('Podaj prawidłową ilość.');return;}
-  var newPrice=Math.round(newKg*4.5*100)/100;
+  var newPrice=Math.round(newKg*4*100)/100;
   entry.kg=newKg;entry.price=newPrice;
   apiAction('action=laundry_edit&lrow='+encodeURIComponent(lrow)+'&kg='+encodeURIComponent(newKg));
   toast('✏️ Zaktualizowano: '+newKg+' kg = '+newPrice.toFixed(2)+' EUR');
