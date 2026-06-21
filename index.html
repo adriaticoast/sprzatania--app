@@ -228,6 +228,10 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
     <div><div class="header-title">Kalendarz sprzątań</div><div class="header-sub" id="cal-sub">Wszystkie zaplanowane</div></div>
     <button class="header-refresh" onclick="forceRefresh()">↻</button>
   </div>
+  <div style="display:flex;gap:0;margin-bottom:14px;background:#fff;border:0.5px solid #ddd;border-radius:10px;overflow:hidden;">
+  <button id="cal-tab-upcoming" onclick="calTab('upcoming')" style="flex:1;padding:11px;font-size:14px;font-weight:500;border:none;cursor:pointer;background:#2980B9;color:#fff;">📅 Nadchodzące</button>
+  <button id="cal-tab-archive" onclick="calTab('archive')" style="flex:1;padding:11px;font-size:14px;font-weight:500;border:none;cursor:pointer;background:#fff;color:#888;">📦 Archiwum</button>
+</div>
   <div class="w">
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:#fff;border-radius:10px;border:0.5px solid #ddd;font-size:11px;">
       <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;background:#F9F100;border:0.5px solid #F0D800;border-radius:3px;flex-shrink:0;"></span>🌙 Długi dzień pracy</span>
@@ -398,49 +402,72 @@ function showJobs(w){
   document.getElementById('jobs-content').innerHTML=html;show('s-jobs');
 }
 
+var _calTab='upcoming';
+function calTab(tab){
+  _calTab=tab;
+  var btnU=document.getElementById('cal-tab-upcoming'),btnA=document.getElementById('cal-tab-archive');
+  if(btnU){btnU.style.background=tab==='upcoming'?'#2980B9':'#fff';btnU.style.color=tab==='upcoming'?'#fff':'#888';}
+  if(btnA){btnA.style.background=tab==='archive'?'#2980B9':'#fff';btnA.style.color=tab==='archive'?'#fff':'#888';}
+  renderCalContent();
+}
+
 function showCalendar(){
   state.prevScreen=state.currentWorker?'jobs':'login';
   if(!state.loaded){document.getElementById('cal-content').innerHTML='<div class="spinner"></div>';show('s-calendar');loadData(function(){showCalendar();});return;}
+  document.getElementById('cal-sub').textContent='Łącznie: '+state.allJobs.length+' sprzątań';
+  renderCalContent();
+  show('s-calendar');
+}
+
+function renderCalContent(){
   var today=new Date();today.setHours(0,0,0,0);
-  var jobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return jd>=today;});
-  var psJobs=(state.preSeason||[]).filter(function(p){return p.ordered&&p.date;}).map(function(p){var d=new Date(p.date);return{property:p.property,date:d,dateTs:d.getTime(),timeStr:'',cleaner:'',priority:'FLEXIBLE',done:false,isPreSeason:true};});
-  var allCalJobs=jobs.concat(psJobs);
-  allCalJobs.sort(function(a,b){var dd=new Date(a.date)-new Date(b.date);if(dd!==0)return dd;return(a.timeStr||'99:99').localeCompare(b.timeStr||'99:99');});
-  var months={};
-  allCalJobs.forEach(function(j){var d=new Date(j.date);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!months[k])months[k]=[];months[k].push(j);});
   var html='';
-  Object.keys(months).sort().forEach(function(k){
-    var p=k.split('-'),mn=MONTHS_FULL[Number(p[1])-1]+' '+p[0],mj=months[k];
-    html+='<div style="margin-bottom:28px;"><div class="cal-month-header"><span class="cal-month-name">'+mn+'</span><span class="cal-month-count">'+mj.length+' sprz\u0105ta\u0144</span></div>';
-    mj.forEach(function(j){
-      var d=new Date(j.date);
-      if(j.isPreSeason){html+='<div class="cal-item cal-item-preseason" onclick="openPreSeasonItem(\''+esc(j.property)+'\')">'+'<div class="cal-date cal-date-green"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div>'+'<div class="cal-info"><div class="cal-prop">🌱 '+esc(j.property)+'</div><div class="cal-cleaner cal-cleaner-green">Sprz\u0105tanie przed sezonem</div><div class="cal-badges"><span class="badge badge-preseason">PRE-SEASON</span></div></div></div>';return;}
-      var calAlert='';
-      if(!j.timeStr)calAlert='<span style="font-size:10px;font-weight:500;background:#FF5722;color:#fff;padding:2px 7px;border-radius:20px;">👷 Potrzebny dodatkowy pracownik</span>';
-      else if(j.timeStr>='17:00')calAlert='<span style="font-size:10px;font-weight:500;background:#F9F100;color:#7D6608;border:0.5px solid #F0D800;padding:2px 7px;border-radius:20px;">🌙 D\u0142ugi dzie\u0144 pracy</span>';
-      var calDateBg=!j.timeStr?'background:#FFCCBC;':(j.timeStr>='17:00'?'background:#FFF176;':'');
-      html+='<div class="cal-item'+(j.done?' done':'')+'" onclick="openJob(\''+esc(j.cleaner)+'\','+j.row+')">'+'<div class="cal-date" style="'+calDateBg+'"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div>'+'<div class="cal-info"><div class="cal-prop">🏠 '+esc(j.property)+'</div><div class="cal-cleaner">👤 '+esc(j.cleaner)+(j.timeStr?' \u23f0 '+esc(j.timeStr):'')+'</div>'+'<div class="cal-badges"><span class="badge badge-'+j.priority+'">'+j.priority+'</span>'+(j.done?'<span class="cal-done-badge">\u2713 Done</span>':'')+calAlert+'</div></div></div>';
-    });
-    html+='</div>';
-  });
-  var pastJobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return jd<today;});
-  pastJobs.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-  if(pastJobs.length){
-    var pastMonths={};
-    pastJobs.forEach(function(j){var d=new Date(j.date);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!pastMonths[k])pastMonths[k]=[];pastMonths[k].push(j);});
-    html+='<div style="margin-top:28px;padding-top:16px;border-top:2px solid #eee;"><div style="font-size:14px;font-weight:500;color:#bbb;margin-bottom:16px;">📦 Archiwum</div>';
-    Object.keys(pastMonths).sort().reverse().forEach(function(k){
-      var p=k.split('-'),mn=MONTHS_FULL[Number(p[1])-1]+' '+p[0],mj=pastMonths[k];
-      html+='<div style="margin-bottom:20px;"><div class="cal-month-header" style="opacity:0.4;"><span class="cal-month-name">'+mn+'</span><span class="cal-month-count">'+mj.length+' sprz\u0105ta\u0144</span></div>';
-      mj.forEach(function(j){var d=new Date(j.date);html+='<div class="cal-item done" onclick="openJob(\''+esc(j.cleaner)+'\','+j.row+')" style="opacity:0.45;"><div class="cal-date"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div><div class="cal-info"><div class="cal-prop">🏠 '+esc(j.property)+'</div><div class="cal-cleaner">👤 '+esc(j.cleaner)+(j.timeStr?' \u23f0 '+esc(j.timeStr):'')+'</div><div class="cal-badges"><span class="badge badge-'+j.priority+'">'+j.priority+'</span>'+(j.done?'<span class="cal-done-badge">\u2713 Done</span>':'')+'</div></div></div>';});
+
+  if(_calTab==='upcoming'){
+    var jobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return jd>=today;});
+    var psJobs=(state.preSeason||[]).filter(function(p){return p.ordered&&p.date;}).map(function(p){var d=new Date(p.date);return{property:p.property,date:d,dateTs:d.getTime(),timeStr:'',cleaner:'',priority:'FLEXIBLE',done:false,isPreSeason:true};});
+    var allCalJobs=jobs.concat(psJobs);
+    allCalJobs.sort(function(a,b){var dd=new Date(a.date)-new Date(b.date);if(dd!==0)return dd;return(a.timeStr||'99:99').localeCompare(b.timeStr||'99:99');});
+    var months={};
+    allCalJobs.forEach(function(j){var d=new Date(j.date);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!months[k])months[k]=[];months[k].push(j);});
+    Object.keys(months).sort().forEach(function(k){
+      var p=k.split('-'),mn=MONTHS_FULL[Number(p[1])-1]+' '+p[0],mj=months[k];
+      html+='<div style="margin-bottom:28px;"><div class="cal-month-header"><span class="cal-month-name">'+mn+'</span><span class="cal-month-count">'+mj.length+' sprzątań</span></div>';
+      mj.forEach(function(j){
+        var d=new Date(j.date);
+        if(j.isPreSeason){html+='<div class="cal-item cal-item-preseason" onclick="openPreSeasonItem(\''+esc(j.property)+'\')">'+'<div class="cal-date cal-date-green"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div>'+'<div class="cal-info"><div class="cal-prop">🌱 '+esc(j.property)+'</div><div class="cal-cleaner cal-cleaner-green">Sprzątanie przed sezonem</div><div class="cal-badges"><span class="badge badge-preseason">PRE-SEASON</span></div></div></div>';return;}
+        var calAlert='';
+        if(!j.timeStr)calAlert='<span style="font-size:10px;font-weight:500;background:#FF5722;color:#fff;padding:2px 7px;border-radius:20px;">👷 Potrzebny dodatkowy pracownik</span>';
+        else if(j.timeStr>='17:00')calAlert='<span style="font-size:10px;font-weight:500;background:#F9F100;color:#7D6608;border:0.5px solid #F0D800;padding:2px 7px;border-radius:20px;">🌙 Długi dzień pracy</span>';
+        var calDateBg=!j.timeStr?'background:#FFCCBC;':(j.timeStr>='17:00'?'background:#FFF176;':'');
+        html+='<div class="cal-item'+(j.done?' done':'')+'" onclick="openJob(\''+esc(j.cleaner)+'\','+j.row+')">'+'<div class="cal-date" style="'+calDateBg+'"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div>'+'<div class="cal-info"><div class="cal-prop">🏠 '+esc(j.property)+'</div><div class="cal-cleaner">👤 '+esc(j.cleaner)+(j.timeStr?' ⏰ '+esc(j.timeStr):'')+'</div>'+'<div class="cal-badges"><span class="badge badge-'+j.priority+'">'+j.priority+'</span>'+(j.done?'<span class="cal-done-badge">✓ Done</span>':'')+calAlert+'</div></div></div>';
+      });
       html+='</div>';
     });
-    html+='</div>';
+    if(!html)html='<div class="no-jobs">Brak zaplanowanych sprzątań</div>';
+
+  } else {
+    // ARCHIWUM
+    var pastJobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return jd<today;});
+    pastJobs.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+    var pastPS=(state.preSeason||[]).filter(function(p){return p.ordered&&p.date&&new Date(p.date)<today;}).map(function(p){var d=new Date(p.date);return{property:p.property,date:d,dateTs:d.getTime(),timeStr:'',cleaner:'Pre-season',priority:'FLEXIBLE',done:true,isPreSeason:true,row:null};});
+    var allPast=pastJobs.concat(pastPS);
+    allPast.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+    var pastMonths={};
+    allPast.forEach(function(j){var d=new Date(j.date);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!pastMonths[k])pastMonths[k]=[];pastMonths[k].push(j);});
+    Object.keys(pastMonths).sort().reverse().forEach(function(k){
+      var p=k.split('-'),mn=MONTHS_FULL[Number(p[1])-1]+' '+p[0],mj=pastMonths[k];
+      html+='<div style="margin-bottom:20px;"><div class="cal-month-header"><span class="cal-month-name">'+mn+'</span><span class="cal-month-count">'+mj.length+' sprzątań</span></div>';
+      mj.forEach(function(j){
+        var d=new Date(j.date);
+        if(j.isPreSeason){html+='<div class="cal-item cal-item-preseason done" onclick="openPreSeasonItem(\''+esc(j.property)+'\')">'+'<div class="cal-date cal-date-green"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div>'+'<div class="cal-info"><div class="cal-prop">🌱 '+esc(j.property)+'</div><div class="cal-cleaner cal-cleaner-green">Pre-season</div><div class="cal-badges"><span class="badge badge-preseason">PRE-SEASON</span></div></div></div>';return;}
+        html+='<div class="cal-item done" onclick="openJob(\''+esc(j.cleaner)+'\','+j.row+')">'+'<div class="cal-date"><div class="cal-day-name">'+DAY_NAMES[d.getDay()]+'</div><div class="cal-day-num">'+d.getDate()+'</div></div>'+'<div class="cal-info"><div class="cal-prop">🏠 '+esc(j.property)+'</div><div class="cal-cleaner">👤 '+esc(j.cleaner)+(j.timeStr?' ⏰ '+esc(j.timeStr):'')+'</div><div class="cal-badges"><span class="badge badge-'+j.priority+'">'+j.priority+'</span>'+(j.done?'<span class="cal-done-badge">✓ Done</span>':'')+'</div></div></div>';
+      });
+      html+='</div>';
+    });
+    if(!html)html='<div class="no-jobs">Brak archiwalnych sprzątań</div>';
   }
-  if(!html)html='<div class="no-jobs">Brak zaplanowanych sprz\u0105ta\u0144</div>';
   document.getElementById('cal-content').innerHTML=html;
-  document.getElementById('cal-sub').textContent='\u0141\u0105cznie: '+state.allJobs.length+' sprz\u0105ta\u0144';
-  show('s-calendar');
 }
 
 function goBackFromPreSeason(){if(state.prevScreen==='calendar')showCalendar();else showLogin();}
