@@ -1195,22 +1195,26 @@ function init(){
       fetch(API+'?action=ensure_ids&_='+Date.now(),{cache:'no-store'}).catch(function(){});
     },3000);
   });
-  // Auto-refresh co 30 sekund
-  setInterval(function(){
-    var currentScreen=document.querySelector('.screen.active');
-    if(!currentScreen)return;
-    var screenId=currentScreen.id;
-    if(document.activeElement&&(document.activeElement.tagName==='TEXTAREA'||document.activeElement.tagName==='INPUT'))return;
-    state.loaded=false;
-    loadData(function(){
-      if(screenId==='s-jobs'&&state.currentWorker)showJobs(state.currentWorker);
-      else if(screenId==='s-calendar')showCalendar();
-      else if(screenId==='s-login')renderLogin();
-      else if(screenId==='s-laundry')showLaundry();
-      else if(screenId==='s-preseason')showPreSeason();
-    });
-  },30000);
-}
+  
+var _lastRefresh=Date.now();
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState!=='visible')return;
+  if(Date.now()-_lastRefresh < 5*60*1000)return; // min. 5 minut
+  if(document.activeElement&&(document.activeElement.tagName==='TEXTAREA'||document.activeElement.tagName==='INPUT'))return;
+  var currentScreen=document.querySelector('.screen.active');
+  if(!currentScreen)return;
+  var screenId=currentScreen.id;
+  _lastRefresh=Date.now();
+  state.loaded=false;
+  loadData(function(){
+    if(screenId==='s-jobs'&&state.currentWorker)showJobs(state.currentWorker);
+    else if(screenId==='s-calendar')renderCalContent();
+    else if(screenId==='s-login')renderLogin();
+    else if(screenId==='s-laundry')showLaundry();
+    else if(screenId==='s-preseason')showPreSeason();
+  });
+});
+  
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
 window.addEventListener('load',function(){init();});
 </script>
