@@ -425,7 +425,7 @@ function renderCalContent(){
 
   if(_calTab==='upcoming'){
     var jobs=state.allJobs.filter(function(j){var jd=new Date(j.date);jd.setHours(0,0,0,0);return jd>=today;});
-    var psJobs=(state.preSeason||[]).filter(function(p){return p.ordered&&p.date;}).map(function(p){var d=new Date(p.date);return{property:p.property,date:d,dateTs:d.getTime(),timeStr:'',cleaner:'',priority:'FLEXIBLE',done:false,isPreSeason:true};});
+    var psJobs=(state.preSeason||[]).filter(function(p){return p.ordered&&p.date&&new Date(p.date)>=today;}).map(function(p){var d=new Date(p.date);return{property:p.property,date:d,dateTs:d.getTime(),timeStr:'',cleaner:'',priority:'FLEXIBLE',done:false,isPreSeason:true};});
     var allCalJobs=jobs.concat(psJobs);
     allCalJobs.sort(function(a,b){var dd=new Date(a.date)-new Date(b.date);if(dd!==0)return dd;return(a.timeStr||'99:99').localeCompare(b.timeStr||'99:99');});
     var months={};
