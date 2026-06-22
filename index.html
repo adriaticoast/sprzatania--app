@@ -607,7 +607,8 @@ function showTransport(){
     +'<input style="padding:10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#FAFAFA;" type="number" id="t-km" placeholder="Kilometry" min="0" step="0.1">'
     +'<input style="padding:10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#FAFAFA;" type="number" id="t-price" placeholder="Cena EUR" min="0" step="0.01">'
     +'</div>'
-    +'<select style="width:100%;padding:10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#FAFAFA;margin-bottom:8px;" id="t-worker">'+workerOptions+'</select>'
+    '<select style="width:100%;padding:10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#FAFAFA;margin-bottom:4px;" id="t-worker" onchange="syncWorkerInput(\'t-worker\',\'t-worker-manual\')">'+workerOptions+'</select>'
++'<input style="width:100%;padding:10px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#FAFAFA;margin-bottom:8px;" type="text" id="t-worker-manual" placeholder="lub wpisz imię ręcznie..." oninput="syncWorkerSelect(\'t-worker\',\'t-worker-manual\')">'
     +'<textarea style="width:100%;padding:9px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;color:#222;background:#FAFAFA;resize:vertical;font-family:inherit;margin-bottom:8px;" id="t-notes" rows="2" placeholder="Uwagi (opcjonalnie)"></textarea>'
     +'<button style="width:100%;padding:12px;background:#6D4C41;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;" onclick="addTransport()">💾 Zapisz wpis transportu</button></div>';
 
@@ -657,7 +658,7 @@ function addTransport(){
   var date=document.getElementById('t-date').value;
   var km=parseFloat(document.getElementById('t-km').value)||0;
   var price=parseFloat(document.getElementById('t-price').value)||0;
-  var worker=document.getElementById('t-worker').value;
+  var worker=document.getElementById('t-worker-manual').value.trim()||document.getElementById('t-worker').value;
   var notes=document.getElementById('t-notes').value.trim();
   if(!prop&&!client){alert('Wpisz klienta lub wybierz domek.');return;}
   if(!date){alert('Wpisz dat\u0119.');return;}
@@ -734,7 +735,8 @@ function editTransportEntry(trow){
     +'<input style="padding:9px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#fff;" type="number" id="et-km-'+trow+'" value="'+entry.km+'" min="0" step="0.1" placeholder="km">'
     +'<input style="padding:9px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#fff;" type="number" id="et-price-'+trow+'" value="'+entry.price+'" min="0" step="0.01" placeholder="EUR">'
     +'</div>'
-    +'<select style="width:100%;padding:9px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#fff;margin-bottom:8px;" id="et-worker-'+trow+'">'+workerOptions+'</select>'
+    +'<select style="width:100%;padding:9px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#fff;margin-bottom:4px;" id="et-worker-'+trow+'" onchange="syncWorkerInput(\'et-worker-'+trow+'\',\'et-worker-manual-'+trow+'\')">'+workerOptions+'</select>'
++'<input style="width:100%;padding:9px;border:0.5px solid #ddd;border-radius:8px;font-size:14px;color:#222;background:#fff;margin-bottom:8px;" type="text" id="et-worker-manual-'+trow+'" placeholder="lub wpisz imię ręcznie..." value="'+(!state.workers.includes(entry.worker)?esc(entry.worker||''):'')+'" oninput="syncWorkerSelect(\'et-worker-'+trow+'\',\'et-worker-manual-'+trow+'\')">'
     +'<textarea style="width:100%;padding:9px;border:0.5px solid #ddd;border-radius:8px;font-size:13px;color:#222;background:#fff;resize:vertical;font-family:inherit;margin-bottom:10px;" id="et-notes-'+trow+'" rows="2">'+esc(entry.notes||'')+'</textarea>'
     +'<div style="display:flex;gap:8px;">'
     +'<button style="flex:1;padding:10px;background:#6D4C41;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;" onclick="saveTransportEdit(\''+trow+'\')">\u2705 Zapisz</button>'
@@ -748,7 +750,7 @@ function saveTransportEdit(trow){
   var date=document.getElementById('et-date-'+trow).value;
   var km=parseFloat(document.getElementById('et-km-'+trow).value)||0;
   var price=parseFloat(document.getElementById('et-price-'+trow).value)||0;
-  var worker=document.getElementById('et-worker-'+trow).value;
+  var worker=document.getElementById('et-worker-manual-'+trow).value.trim()||document.getElementById('et-worker-'+trow).value;
   var notes=document.getElementById('et-notes-'+trow).value.trim();
   if(!prop&&!client){alert('Wpisz klienta lub wybierz domek.');return;}
   if(!date){alert('Wpisz dat\u0119.');return;}
@@ -1178,6 +1180,17 @@ function openVideoGallery(inputId){
   }
 }
 function uploadMultipleProp(idx,input,isVideo){uploadPropPhoto(idx,input,isVideo);}
+
+function syncWorkerInput(selId, inputId) {
+  var sel = document.getElementById(selId);
+  var inp = document.getElementById(inputId);
+  if (sel && inp && sel.value) inp.value = '';
+}
+function syncWorkerSelect(selId, inputId) {
+  var sel = document.getElementById(selId);
+  var inp = document.getElementById(inputId);
+  if (sel && inp && inp.value.trim()) sel.value = '';
+}
 
 // ── Init z visibilitychange zamiast setInterval ───────────────
 function init(){
