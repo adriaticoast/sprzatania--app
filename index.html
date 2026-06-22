@@ -670,7 +670,12 @@ function addTransport(){
   toast('\u2705 Transport zapisany');
   showTransport();
   var url=API+'?action=transport_add&client='+encodeURIComponent(client)+'&property='+encodeURIComponent(prop)+'&date='+encodeURIComponent(date)+'&km='+encodeURIComponent(km)+'&price='+encodeURIComponent(price)+'&worker='+encodeURIComponent(worker)+'&notes='+encodeURIComponent(notes)+'&_='+Date.now();
-  fetch(url,{cache:'no-store'}).then(function(r){return r.json();}).then(function(data){if(data.ok&&data.trow)newEntry.trow=data.trow;}).catch(function(){});
+  fetch(url,{cache:'no-store'}).then(function(r){return r.json();}).then(function(data){
+    if(data.ok&&data.trow){
+      newEntry.trow=data.trow;
+      showTransport();
+    }
+  }).catch(function(){});
 }
 
 function addTransportNote(trow){
