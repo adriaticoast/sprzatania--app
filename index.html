@@ -663,7 +663,6 @@ function addTransport(){
   if(!prop&&!client){alert('Wpisz klienta lub wybierz domek.');return;}
   if(!date){alert('Wpisz dat\u0119.');return;}
   if(!km||km<=0){alert('Wpisz liczb\u0119 kilometr\u00f3w.');return;}
-  if(!price||price<=0){alert('Wpisz cen\u0119.');return;}
   if(!worker){alert('Wybierz pracownika.');return;}
   var newEntry={trow:'loc-'+Date.now(),client:client,property:prop,date:date,km:km,price:price,worker:worker,notes:notes};
   if(!state.transport)state.transport=[];
@@ -755,7 +754,6 @@ function saveTransportEdit(trow){
   if(!prop&&!client){alert('Wpisz klienta lub wybierz domek.');return;}
   if(!date){alert('Wpisz dat\u0119.');return;}
   if(!km||km<=0){alert('Wpisz km.');return;}
-  if(!price||price<=0){alert('Wpisz cen\u0119.');return;}
   if(!worker){alert('Wybierz pracownika.');return;}
   var entry=(state.transport||[]).find(function(t){return String(t.trow)===String(trow);});
   if(entry){entry.client=client;entry.property=prop;entry.date=date;entry.km=km;entry.price=price;entry.worker=worker;entry.notes=notes;}
