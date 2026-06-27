@@ -963,20 +963,20 @@ function showRozlProp(prop){
   var html='';
   if(ps.length){
     html+='<div style="font-size:13px;font-weight:500;color:#1E8449;margin:0 0 8px 0;padding-bottom:6px;border-bottom:2px solid #82E0AA;">🌱 Pre-season</div>';
-    ps.forEach(function(p,pi){var cmtKey='ps_'+pi;var cmts=(_rozlState.comments[cmtKey]||[]);html+=buildRozlItem({icon:'🌱',label:'Sprz\u0105tanie przed sezonem',date:p.date,price:p.total,editable:false,notes:p.details,cmtKey:cmtKey,cmts:cmts,extraNote:'Cena z arkusza PRE_SEASON'});});
+    ps.forEach(function(p,pi){html+=buildRozlItem({icon:'🌱',label:'Sprz\u0105tanie przed sezonem',date:p.date,price:p.total,editable:false,notes:p.details,extraNote:'Cena z arkusza PRE_SEASON',showComment:false});});
   }
   if(jobs.length){
     html+='<div style="font-size:13px;font-weight:500;color:#2471A3;margin:16px 0 8px 0;padding-bottom:6px;border-bottom:2px solid #AED6F1;">🧹 Sprz\u0105tania</div>';
-    jobs.forEach(function(j){var cmtKey='job_'+j.row;var cmts=(_rozlState.comments[cmtKey]||[]);var jobNotes=(j.usterki||[]).map(function(u){return u.text;}).join(' \u00b7 ');html+=buildRozlItem({icon:'🧹',label:'Sprz\u0105tanie',date:fmtDateShort(new Date(j.date)),price:j.charge,editable:true,editKey:'charge_'+j.row,notes:jobNotes,cmtKey:cmtKey,cmts:cmts,cleaner:j.cleaner});});
+    jobs.forEach(function(j){var jobNotes=(j.usterki||[]).map(function(u){return u.text;}).join(' \u00b7 ');html+=buildRozlItem({icon:'🧹',label:'Sprz\u0105tanie',date:fmtDateShort(new Date(j.date)),price:j.charge,editable:true,editKey:'charge_'+j.row,notes:jobNotes,showComment:true,comment:j.rozlComment||'',jobRow:j.row,jobId:j.jobId||'',cleaner:j.cleaner});});
   }
   if(lau.length){
     html+='<div style="font-size:13px;font-weight:500;color:#00838F;margin:16px 0 8px 0;padding-bottom:6px;border-bottom:2px solid #80DEEA;">🦺 Pranie</div>';
-    lau.forEach(function(l){var cmtKey='lau_'+l.lrow;var cmts=(_rozlState.comments[cmtKey]||[]);html+=buildRozlItem({icon:'🦺',label:'Pranie',date:fmtDateFromKey(l.date),price:l.price,editable:false,notes:l.notes,cmtKey:cmtKey,cmts:cmts,extra:l.kg+' kg'});});
+    lau.forEach(function(l){html+=buildRozlItem({icon:'🦺',label:'Pranie',date:fmtDateFromKey(l.date),price:l.price,editable:false,notes:l.notes,extra:l.kg+' kg',showComment:false});});
   }
   var tra=(state.transport||[]).filter(function(t){return t.date&&t.date.substring(0,7)===monthKey&&t.property===prop;});
   if(tra.length){
     html+='<div style="font-size:13px;font-weight:500;color:#6D4C41;margin:16px 0 8px 0;padding-bottom:6px;border-bottom:2px solid #BCAAA4;">🚗 Transport</div>';
-    tra.forEach(function(t){var cmtKey='tra_'+t.trow;var cmts=(_rozlState.comments[cmtKey]||[]);html+=buildRozlItem({icon:'🚗',label:'Transport',date:fmtDateFromKey(t.date),price:t.price,editable:false,notes:t.notes||'',cmtKey:cmtKey,cmts:cmts,extra:t.km+' km · '+esc(t.worker)});});
+    tra.forEach(function(t){html+=buildRozlItem({icon:'🚗',label:'Transport',date:fmtDateFromKey(t.date),price:t.price,editable:false,notes:t.notes||'',extra:t.km+' km · '+esc(t.worker),showComment:false});});
   }
   var total=0;
   jobs.forEach(function(j){total+=getRozlCharge(j.row,j.charge);});ps.forEach(function(p){total+=Number(p.total||0);});lau.forEach(function(l){total+=Number(l.price||0);});tra.forEach(function(t){total+=Number(t.price||0);});
@@ -1005,10 +1005,16 @@ function buildRozlItem(o){
   html+='</div>';
   if(o.notes){html+='<div style="font-size:12px;color:#666;background:#F4F6F8;border-radius:6px;padding:6px 8px;margin-bottom:6px;">'+esc(o.notes)+'</div>';}
   if(o.extraNote){html+='<div style="font-size:11px;color:#aaa;margin-bottom:6px;">'+esc(o.extraNote)+'</div>';}
-  var cmts=o.cmts||[];
-  if(cmts.length){cmts.forEach(function(c,ci){html+='<div style="display:flex;align-items:flex-start;gap:6px;padding:5px 8px;background:#FEF9E7;border-radius:6px;margin-bottom:4px;"><div style="flex:1;font-size:12px;color:#444;">'+esc(c.text)+'</div><button onclick="editRozlComment(\''+esc(o.cmtKey)+'\','+ci+')" style="font-size:11px;padding:2px 6px;background:#EBF5FB;color:#1A5276;border:0.5px solid #AED6F1;border-radius:5px;cursor:pointer;">\u270f</button><button onclick="delRozlComment(\''+esc(o.cmtKey)+'\','+ci+')" style="font-size:11px;padding:2px 6px;background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595;border-radius:5px;cursor:pointer;">\u2715</button></div>';});}
-  html+='<div style="display:flex;gap:6px;margin-top:6px;"><input type="text" id="cmt-'+esc(o.cmtKey)+'" placeholder="Dodaj komentarz..." style="flex:1;padding:7px;border:0.5px solid #ddd;border-radius:8px;font-size:12px;font-family:inherit;" onkeydown="if(event.keyCode===13)addRozlComment(\''+esc(o.cmtKey)+'\')">'+'<button onclick="addRozlComment(\''+esc(o.cmtKey)+'\')" style="padding:7px 12px;background:#6C3483;color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;">+</button></div>';
-  html+='</div>';return html;
+  if(o.showComment){
+    html+='<div style="margin-top:8px;">'
+      +'<div style="font-size:11px;font-weight:500;color:#888;margin-bottom:4px;">💬 Komentarz do rozliczenia</div>'
+      +'<input type="text" id="rozlcmt-'+o.jobRow+'" value="'+esc(o.comment||'')+'" placeholder="Wpisz komentarz dla w\u0142a\u015bciciela..." '
+      +'style="width:100%;padding:7px;border:0.5px solid #C39BD3;border-radius:8px;font-size:12px;font-family:inherit;" '
+      +'oninput="saveRozlComment(\''+o.jobRow+'\',\''+esc(o.jobId||'')+'\',this.value)">'
+      +'</div>';
+  }
+  html+='</div>';
+  return html;
 }
 var _rozlCharges={};
 function getRozlCharge(row,defaultVal){if(row===undefined||row===null)return Number(defaultVal||0);return _rozlCharges[String(row)]!==undefined?_rozlCharges[String(row)]:Number(defaultVal||0);}
@@ -1032,9 +1038,16 @@ function recalcRozlTotal(){
   jobs.forEach(function(j){total+=getRozlCharge(j.row,j.charge);});ps.forEach(function(p){total+=Number(p.total||0);});lau.forEach(function(l){total+=Number(l.price||0);});
   var el=document.getElementById('rozl-total');if(el)el.textContent=total.toFixed(2)+' EUR';
 }
-function addRozlComment(key){var inp=document.getElementById('cmt-'+key);if(!inp||!inp.value.trim())return;if(!_rozlState.comments[key])_rozlState.comments[key]=[];_rozlState.comments[key].push({text:inp.value.trim()});inp.value='';showRozlProp(_rozlState.prop);}
-function delRozlComment(key,idx){if(!_rozlState.comments[key])return;_rozlState.comments[key].splice(idx,1);showRozlProp(_rozlState.prop);}
-function editRozlComment(key,idx){var c=_rozlState.comments[key]&&_rozlState.comments[key][idx];if(!c)return;var nv=prompt('Edytuj komentarz:',c.text);if(nv===null)return;nv=nv.trim();if(!nv){alert('Komentarz nie mo\u017ce by\u0107 pusty.');return;}_rozlState.comments[key][idx].text=nv;showRozlProp(_rozlState.prop);}
+var _rozlCommentTimers={};
+function saveRozlComment(row,jobId,val){
+  clearTimeout(_rozlCommentTimers[row]);
+  _rozlCommentTimers[row]=setTimeout(function(){
+    var job=state.allJobs.find(function(j){return j.row===Number(row);});
+    if(job)job.rozlComment=val;
+    apiAction('action=rozl_comment_save&row='+row+'&jobId='+encodeURIComponent(jobId||'')+'&comment='+encodeURIComponent(val));
+    toast('💬 Komentarz zapisany');
+  },1000);
+}
 function downloadRozlPDF(prop,monthKey){
   var mLabel=ROZL_MONTHS.find(function(m){return m.key===monthKey;})||{label:monthKey};
   var jobs=state.allJobs.filter(function(j){var d=new Date(j.date);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');return k===monthKey&&j.property===prop;});
@@ -1043,7 +1056,7 @@ function downloadRozlPDF(prop,monthKey){
   var lau=(state.laundry||[]).filter(function(l){return l.date&&l.date.substring(0,7)===monthKey&&l.property===prop;});
   var total=0;var rows='';
   ps.forEach(function(p){var price=Number(p.total||0);total+=price;var cmts=(_rozlState.comments['ps_'+ps.indexOf(p)]||[]).map(function(c){return c.text;}).join('; ');rows+='<tr><td>🌱 Pre-season</td><td>'+esc(p.date||'')+'</td><td>'+(p.details?esc(p.details):'')+(cmts?'<br><em>'+esc(cmts)+'</em>':'')+'</td><td style="text-align:right;font-weight:600;">'+price.toFixed(2)+' EUR</td></tr>';});
-  jobs.forEach(function(j){var price=getRozlCharge(j.row,j.charge);total+=price;var jobNotes=(j.usterki||[]).map(function(u){return u.text;}).join('; ');var cmts=(_rozlState.comments['job_'+j.row]||[]).map(function(c){return c.text;}).join('; ');var allNotes=[jobNotes,cmts].filter(Boolean).join(' \u00b7 ');rows+='<tr><td>🧹 Sprz\u0105tanie</td><td>'+esc(fmtDateShort(new Date(j.date)))+'</td><td>'+(j.cleaner?esc(j.cleaner):'')+(allNotes?'<br><em>'+esc(allNotes)+'</em>':'')+'</td><td style="text-align:right;font-weight:600;">'+price.toFixed(2)+' EUR</td></tr>';});
+  jobs.forEach(function(j){var price=getRozlCharge(j.row,j.charge);total+=price;var jobNotes=(j.usterki||[]).map(function(u){return u.text;}).join('; ');var comment=j.rozlComment||'';var allNotes=[jobNotes,comment].filter(Boolean).join(' \u00b7 ');rows+='<tr><td>🧹 Sprz\u0105tanie</td><td>'+esc(fmtDateShort(new Date(j.date)))+'</td><td>'+(j.cleaner?esc(j.cleaner):'')+(allNotes?'<br><em>'+esc(allNotes)+'</em>':'')+'</td><td style="text-align:right;font-weight:600;">'+price.toFixed(2)+' EUR</td></tr>';});
   lau.forEach(function(l){var price=Number(l.price||0);total+=price;var cmts=(_rozlState.comments['lau_'+l.lrow]||[]).map(function(c){return c.text;}).join('; ');rows+='<tr><td>🦺 Pranie</td><td>'+esc(fmtDateFromKey(l.date))+'</td><td>'+l.kg+' kg'+(l.notes?'<br><em>'+esc(l.notes)+'</em>':'')+(cmts?'<br><em>'+esc(cmts)+'</em>':'')+'</td><td style="text-align:right;font-weight:600;">'+price.toFixed(2)+' EUR</td></tr>';});
   var tra=(state.transport||[]).filter(function(t){return t.date&&t.date.substring(0,7)===monthKey&&t.property===prop;});
   tra.forEach(function(t){var price=Number(t.price||0);total+=price;var cmts=(_rozlState.comments['tra_'+t.trow]||[]).map(function(c){return c.text;}).join('; ');rows+='<tr><td>🚗 Transport</td><td>'+esc(fmtDateFromKey(t.date))+'</td><td>'+esc(t.km)+' km · '+esc(t.worker)+(t.notes?'<br><em>'+esc(t.notes)+'</em>':'')+(cmts?'<br><em>'+esc(cmts)+'</em>':'')+'</td><td style="text-align:right;font-weight:600;">'+price.toFixed(2)+' EUR</td></tr>';});
