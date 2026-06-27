@@ -1012,7 +1012,17 @@ function buildRozlItem(o){
 }
 var _rozlCharges={};
 function getRozlCharge(row,defaultVal){if(row===undefined||row===null)return Number(defaultVal||0);return _rozlCharges[String(row)]!==undefined?_rozlCharges[String(row)]:Number(defaultVal||0);}
-function updateRozlCharge(row,val){_rozlCharges[String(row)]=parseFloat(val)||0;recalcRozlTotal();}
+var _rozlChargeTimers={};
+function updateRozlCharge(row,val){
+  _rozlCharges[String(row)]=parseFloat(val)||0;
+  recalcRozlTotal();
+  clearTimeout(_rozlChargeTimers[row]);
+  _rozlChargeTimers[row]=setTimeout(function(){
+    var job=state.allJobs.find(function(j){return j.row===Number(row);});
+    apiAction('action=charge_save&row='+row+'&jobId='+encodeURIComponent(job&&job.jobId||'')+'&charge='+encodeURIComponent(parseFloat(val)||0));
+    toast('💾 Cena zapisana');
+  },1000);
+}
 function recalcRozlTotal(){
   var monthKey=_rozlState.month,prop=_rozlState.prop;if(!monthKey||!prop)return;
   var jobs=state.allJobs.filter(function(j){var d=new Date(j.date);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');return k===monthKey&&j.property===prop;});
